@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Despliegue - DigitalOcean VPS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 600: '#0284c7', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-slate-800 p-8 md:p-12">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden border-t-8 border-brand-600">
+        
+        <header class="bg-brand-900 text-white p-8 border-b-4 border-brand-600">
+            <h1 class="text-3xl font-bold tracking-tight">Guía de Despliegue VPS</h1>
+            <p class="text-brand-100 mt-1">DigitalOcean Droplet Setup for HELL Project</p>
+        </header>
+
+        <div class="p-8 space-y-10">
+
+            <!-- Step 1 -->
+            <section>
+                <h2 class="text-xl font-bold text-brand-900 mb-4 flex items-center">
+                    <span class="bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                    Preparación del Droplet
+                </h2>
+                <div class="space-y-4 text-sm text-slate-600">
+                    <p>Crea un Droplet con <strong>Ubuntu 22.04 LTS</strong> o superior. Se recomiendan al menos 2GB de RAM para manejar los hilos de saturación de HELL.</p>
+                    <div class="bg-slate-900 text-brand-100 p-4 rounded-lg font-mono text-xs">
+                        ssh root@tu_ip_servidor
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2 -->
+            <section>
+                <h2 class="text-xl font-bold text-brand-900 mb-4 flex items-center">
+                    <span class="bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                    Instalación de Dependencias
+                </h2>
+                <div class="bg-slate-900 text-brand-100 p-4 rounded-lg font-mono text-xs space-y-2">
+                    <p># Actualizar sistema</p>
+                    <p>apt update && apt upgrade -y</p>
+                    <p># Instalar Docker & Docker Compose</p>
+                    <p>curl -fsSL https://get.docker.com -o get-docker.sh</p>
+                    <p>sh get-docker.sh</p>
+                    <p>apt install docker-compose -y</p>
+                </div>
+            </section>
+
+            <!-- Step 3 -->
+            <section>
+                <h2 class="text-xl font-bold text-brand-900 mb-4 flex items-center">
+                    <span class="bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                    Clonación y Configuración
+                </h2>
+                <div class="bg-slate-900 text-brand-100 p-4 rounded-lg font-mono text-xs space-y-2">
+                    <p>git clone https://github.com/uls0/Active-Defense-Hell.git</p>
+                    <p>cd Active-Defense-Hell</p>
+                    <p>cp .env.example .env</p>
+                    <p># Configura tus API Keys y tu IP de Whitelist</p>
+                    <p>nano .env</p>
+                </div>
+            </section>
+
+            <!-- Step 4 -->
+            <section>
+                <h2 class="text-xl font-bold text-brand-900 mb-4 flex items-center">
+                    <span class="bg-brand-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">4</span>
+                    Lanzamiento (The Magic)
+                </h2>
+                <div class="space-y-4">
+                    <p class="text-sm text-slate-600">Ejecuta el despliegue en modo segundo plano:</p>
+                    <div class="bg-slate-900 text-brand-100 p-4 rounded-lg font-mono text-xs">
+                        docker-compose up -d --build
+                    </div>
+                    <div class="bg-brand-50 p-4 rounded border border-brand-200">
+                        <p class="text-xs text-brand-900 font-bold">IMPORTANTE:</p>
+                        <p class="text-xs text-brand-800">Asegúrate de que el Firewall de DigitalOcean permita el tráfico en los puertos configurados (22, 25, 3306, 8080, 1337, etc.).</p>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="text-center text-xs text-slate-400 pt-8">
+                &copy; 2026 DigitalTvGroup Infrastructure Division
+            </footer>
+
+        </div>
+    </div>
+
+</body>
+</html>

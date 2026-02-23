@@ -1,0 +1,22 @@
+# Archivos de Datos (Sparse Files)
+*.dat
+*.bin
+*.img
+data/unit_*
+
+# Seguridad y Credenciales
+.env
+*.key
+keys/
+whitelist.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+# Logs y Bases de Datos
+logs/
+*.sql
+mysql_data/

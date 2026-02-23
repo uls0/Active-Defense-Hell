@@ -6,9 +6,11 @@ services:
     container_name: hell_core
     ports:
       - "8080:8080"
+      - "25:2525"
     environment:
       - USE_AI=${USE_AI:-false}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - VT_API_KEY=${VT_API_KEY}
     volumes:
       - ./payloads:/app/payloads
       - ./logs:/app/logs

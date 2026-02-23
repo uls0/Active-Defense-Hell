@@ -12,6 +12,9 @@ services:
       - "3389:3389"
       - "6379:6379"
       - "445:4455"
+      - "1337:1337"
+      - "8081:8081"
+      - "8082:8082"
     environment:
       - USE_AI=${USE_AI:-false}
       - GEMINI_API_KEY=${GEMINI_API_KEY}

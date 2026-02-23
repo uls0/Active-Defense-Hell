@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Core Switch Administration v4.2.1</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <style>
+        body { background-color: #1a1c23; color: #f4f5f7; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: #24262d; border: 1px solid #3a3f50; padding: 2rem; border-radius: 8px; width: 400px; }
+        .btn-primary { background: #3f83f8; border: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card shadow-lg">
+        <h2 class="text-center mb-4">DELL NETWORKING OS10</h2>
+        <p class="text-muted text-center mb-4">Please authenticate to access the Control Plane</p>
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="admin">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login to C2 Control</button>
+        </form>
+    </div>
+</body>
+</html>

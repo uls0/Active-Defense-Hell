@@ -89,10 +89,23 @@
                     <div class="bg-slate-900 text-brand-100 p-4 rounded-lg font-mono text-xs">
                         docker-compose up -d --build
                     </div>
-                    <div class="bg-brand-50 p-4 rounded border border-brand-200">
-                        <p class="text-xs text-brand-900 font-bold">IMPORTANTE:</p>
-                        <p class="text-xs text-brand-800">Asegúrate de que el Firewall de DigitalOcean permita el tráfico en los puertos configurados (22, 25, 3306, 8080, 1337, etc.).</p>
-                    </div>
+                </div>
+            </section>
+
+            <!-- Troubleshooting Section -->
+            <section class="bg-red-50 p-6 rounded-xl border border-red-200">
+                <h2 class="text-lg font-bold text-red-800 mb-3 flex items-center">
+                    ⚠️ Resolución de Problemas: Puerto 25 Ocupado
+                </h2>
+                <p class="text-sm text-red-700 mb-4">Si recibes un error indicando que el puerto 25 ya está en uso (Bind: address already in use), es probable que tu VPS tenga un servidor de correo (Postfix o Exim4) activo por defecto.</p>
+                <div class="bg-slate-900 text-red-400 p-4 rounded-lg font-mono text-xs space-y-2">
+                    <p># 1. Identificar el servicio</p>
+                    <p>lsof -i :25</p>
+                    <p># 2. Detener y deshabilitar el servicio (Ejemplo: Exim4 o Postfix)</p>
+                    <p>systemctl stop exim4 postfix</p>
+                    <p>systemctl disable exim4 postfix</p>
+                    <p># 3. Intentar el despliegue de HELL nuevamente</p>
+                    <p>docker-compose up -d --build</p>
                 </div>
             </section>
 

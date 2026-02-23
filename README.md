@@ -1,63 +1,52 @@
-# 💀 Proyecto HELL: Sistema de Defensa Activa con IA
+# HELL: Honeypot Exploitation & Lethal Logging
+## Active Defense Infrastructure and Autonomous Threat Mitigation
 
-**HELL (Honeypot Exploitation & Lethal Logging)** es un sistema de defensa activa diseñado para detectar, ralentizar y neutralizar atacantes mediante técnicas de "tarpit", contraataques de saturación y análisis de comportamiento mediante IA.
+HELL is an advanced active defense system designed for the detection, deceleration, and neutralization of adversarial network activity. It utilizes multi-layer tarpits, adaptive AI-driven analysis, and high-aggression counter-measures to mitigate threats from automated bots, human red teams, and autonomous pentesting agents.
 
----
+### Core Technical Specifications
 
-## 🚀 Características Principales
+- **Adaptive AI Engine:** Integrated with Google Gemini 1.5 Flash for real-time behavioral analysis and classification of network requests.
+- **Multi-Protocol Tarpits:**
+    - **SMTP (Port 25):** RFC-compliant session deceleration.
+    - **MySQL (Port 3306):** Authentication handshake loops and delayed response cycles.
+    - **SSH/RDP/Redis:** Service-specific protocol fuzzing and connection freezing.
+- **Active Counter-Measures:**
+    - **Gzip Decompression Bomb:** Delivery of high-ratio compressed payloads (10GB+ expanded) to exhaust attacker system resources.
+    - **Entropy Stream:** Continuous delivery of high-entropy binary data to saturate inbound bandwidth and buffer limits.
+    - **JS Fork-Bomb:** Client-side execution of recursive Web Workers to exhaust CPU/RAM in browser-based tools.
+- **Threat Intelligence Integration:** Automated IP address blacklisting and reporting via VirusTotal Community API.
 
-- **🧠 IA Adaptive Defense:** Integración con Google Gemini (1.5 Flash) para distinguir entre bots genéricos, humanos y agentes de pentesting autónomos de Hugging Face.
-- **🧨 Contraataques Activos:**
-  - **Gzip Bomb:** Entrega de un archivo de 10GB comprimido en pocos MB para colapsar la RAM del atacante.
-  - **Infinite Stream:** Flujo de datos basura a 5MB/s para saturar su ancho de banda.
-- **🕸️ Tarpits Multicapa:**
-  - **SMTP (Puerto 25):** Ralentización extrema de conexiones de correo.
-  - **MySQL (Puerto 3306):** Bucle infinito de autenticación falsa para bots de bases de datos.
-- **📡 Threat Intel:** Reporte automático de IPs atacantes a **VirusTotal** mediante la API de comunidad.
-- **📊 Monitor en Vivo:** Panel en terminal para seguimiento de ataques en tiempo real.
+### Infrastructure Requirements
 
----
+- **Runtime:** Docker 20.10+ / Docker Compose 2.0+
+- **Language:** Python 3.9 (for native monitoring)
+- **Connectivity:** Outbound access to Google Cloud and VirusTotal APIs (optional).
 
-## 🛠️ Requisitos
+### Deployment Protocol
 
-- **Docker & Docker Compose**
-- **Python 3.9+** (Para ejecución local)
-- **API Keys** (Opcional pero recomendado):
-  - [Google AI Studio (Gemini)](https://aistudio.google.com/)
-  - [VirusTotal API](https://www.virustotal.com/)
-
----
-
-## 📦 Instalación y Despliegue
-
-1. **Clonar el repositorio:**
+1. **Initialization:**
    ```bash
    git clone https://github.com/uls0/Active-Defense-Hell.git
    cd Active-Defense-Hell
    ```
 
-2. **Configurar variables de entorno:**
-   ```bash
-   cp .env.example .env
-   # Edita el archivo .env con tus llaves
-   ```
+2. **Configuration:**
+   Rename `.env.example` to `.env` and populate the following parameters:
+   - `GEMINI_API_KEY`: Google AI Studio credential.
+   - `VT_API_KEY`: VirusTotal API credential.
+   - `MY_IP`: Administrator IP for whitelist bypass.
 
-3. **Levantar con Docker:**
+3. **Execution:**
    ```bash
    docker-compose up -d --build
    ```
 
-4. **Monitorear actividad:**
-   ```bash
-   python monitor_hell.py
-   ```
+4. **Audit and Monitoring:**
+   Execute `python monitor_hell.py` for real-time logs and attack telemetry.
+
+### Security Disclaimer
+This software is intended for defensive security research. Operation of active counter-measures should be conducted in accordance with local legal frameworks and internal security policies. The developer assumes no liability for unauthorized or improper use.
 
 ---
-
-## ⚠️ Advertencia Legal
-Este software es una herramienta de seguridad defensiva. El uso de contraataques activos debe realizarse bajo entornos controlados y cumpliendo con las normativas locales de ciberseguridad. El autor no se hace responsable del mal uso de esta herramienta.
-
----
-
-**Desarrollado por Ulises Guzmán & Gemini CLI**
-*"Si entras en el infierno, asegúrate de no poder salir."*
+**Developed by Ulises Guzman & Gemini CLI**
+**Version 1.1.0-Gold**

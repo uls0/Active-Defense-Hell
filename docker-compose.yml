@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  hell_app:
+    build: .
+    container_name: hell_core
+    ports:
+      - "8080:8080"
+    environment:
+      - USE_AI=${USE_AI:-false}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./payloads:/app/payloads
+      - ./logs:/app/logs
+    depends_on:
+      - hell_db
+    restart: always
+
+  hell_db:
+    image: mysql:8.0
+    container_name: hell_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=hell_secret_pass
+      - MYSQL_DATABASE=hell_honeypot
+    volumes:
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    ports:
+      - "3306:3306"
+    restart: always

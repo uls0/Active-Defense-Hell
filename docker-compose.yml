@@ -23,19 +23,21 @@ services:
       - USE_AI=${USE_AI:-false}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - VT_API_KEY=${VT_API_KEY}
+      - MY_IP=${MY_IP}
     volumes:
       - ./payloads:/app/payloads
       - ./logs:/app/logs
+      - ./assets:/app/assets
     restart: always
 
   hell_db:
     image: mysql:8.0
     container_name: hell_db
     environment:
-      - MYSQL_ROOT_PASSWORD=hell_secret_pass
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hell_secret_pass}
       - MYSQL_DATABASE=hell_honeypot
     volumes:
       - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     ports:
-      - "3307:3306" # Mapeamos a otro puerto para no chocar con el tarpit
+      - "3307:3306"
     restart: always

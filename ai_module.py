@@ -1,15 +1,16 @@
+from google import genai
 import os
-import google.generativeai as genai
 
 class GeminiDefender:
     def __init__(self, api_key):
         self.enabled = False
         if api_key:
             try:
-                genai.configure(api_key=api_key)
-                self.model = genai.GenerativeModel('gemini-1.5-flash')
+                # Nuevo SDK google-genai
+                self.client = genai.Client(api_key=api_key)
+                self.model_id = "gemini-1.5-flash"
                 self.enabled = True
-                print("[🤖] IA Gemini conectada y lista para defensa activa.")
+                print("[🤖] IA Gemini (New SDK) conectada y lista para defensa activa.")
             except Exception as e:
                 print(f"[!] Fallo al conectar con Gemini: {e}")
         else:
@@ -20,10 +21,6 @@ class GeminiDefender:
         if not self.enabled:
             return None
             
-        # Detección de patrones comunes en Pentesting-LLMs de Hugging Face
-        # Estos modelos suelen repetir estructuras de prompts o User-Agents genéricos
-        is_llm_pattern = any(x in request_text.lower() for x in ["pentest", "exploit", "nmap", "payload"])
-        
         prompt = f"""
         Actúa como un experto en ciberseguridad. Analiza si esta petición proviene de un 
         agente de IA autónomo (como PentestGPT, AutoGPT o modelos de Hugging Face como Llama-Pentest).
@@ -39,14 +36,18 @@ class GeminiDefender:
         Responde SOLO: [IA_ATACANTE, HUMANO_REDTEAM, BOT_GENERICO].
         """
         try:
-            response = self.model.generate_content(prompt)
+            # Nueva forma de generar contenido con google-genai
+            response = self.client.models.generate_content(
+                model=self.model_id,
+                contents=prompt
+            )
             decision = response.text.strip().upper()
             
-            # Si detectamos una IA, elevamos la agresividad
             if "IA_ATACANTE" in decision:
                 print("[⚠️] DETECTADO AGENTE DE IA AUTÓNOMO. Activando Protocolo Anti-PentestGPT.")
-                return "RCE" # Forzamos GZIP_BOMB para colapsar su buffer
+                return "RCE"
                 
             return decision
-        except:
+        except Exception as e:
+            print(f"[!] Error en análisis de IA: {e}")
             return "SCANNER"

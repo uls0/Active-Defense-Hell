@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 # Copiar archivos del proyecto
 COPY . .
 
-# Instalar dependencias de Python
-RUN pip install --no-cache-dir google-generativeai requests
+# Instalar el nuevo SDK google-genai y requests
+RUN pip install --no-cache-dir google-genai requests
 
 # Exponer el puerto del Tarpit
 EXPOSE 8080

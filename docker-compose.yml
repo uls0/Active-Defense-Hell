@@ -7,6 +7,11 @@ services:
     ports:
       - "8080:8080"
       - "25:2525"
+      - "3306:3306"
+      - "22:2222"
+      - "3389:3389"
+      - "6379:6379"
+      - "445:4455"
     environment:
       - USE_AI=${USE_AI:-false}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
@@ -14,8 +19,6 @@ services:
     volumes:
       - ./payloads:/app/payloads
       - ./logs:/app/logs
-    depends_on:
-      - hell_db
     restart: always
 
   hell_db:
@@ -27,5 +30,5 @@ services:
     volumes:
       - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     ports:
-      - "3306:3306"
+      - "3307:3306" # Mapeamos a otro puerto para no chocar con el tarpit
     restart: always

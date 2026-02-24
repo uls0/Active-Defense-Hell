@@ -4,9 +4,9 @@ import time
 import os
 import binascii
 from ai_module import GeminiDefender
-from threat_intel import VirusTotalReporter
+from threat_intel import VirusTotalReporter, IsMaliciousReporter
 
-# CONFIGURACIÓN HELL v2.3.0: FORENSICS & SCANNER DETECTION
+# CONFIGURACIÓN HELL v2.3.1: INTELLIGENCE SYNC
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [2222, 3389, 4455]
@@ -17,54 +17,56 @@ GZIP_BOMB_PATH = "payloads/bomb.gz"
 LOG_FILE = "logs/hell_activity.log"
 
 VT_KEY = os.getenv("VT_API_KEY", "")
+ISM_KEY = "b0959d3e-97c6-451f-9f95-5148c2da7ddd"
+ISM_SECRET = "643a5731-1af4-4632-b75c-65955138288a"
 MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
 class HellServer:
     def __init__(self):
         os.makedirs("logs", exist_ok=True)
-        self.reporter = VirusTotalReporter(VT_KEY)
+        self.vt_reporter = VirusTotalReporter(VT_KEY)
+        self.ism_reporter = IsMaliciousReporter(ISM_KEY, ISM_SECRET)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"[💀] HELL CORE v2.3.0: Vigilando {len(PORTS)} puertos con análisis forense.")
+        print(f"[💀] HELL CORE v2.3.1: Vigilando {len(PORTS)} puertos con Intelligence Sync.")
 
     def detect_scanner(self, data):
         """Identifica la herramienta de escaneo basada en firmas de payload."""
         data_str = data.decode('utf-8', errors='ignore')
         data_hex = binascii.hexlify(data).decode('utf-8')
 
-        # Firmas de User-Agents y Headers
         if "nmap" in data_str.lower(): return "Nmap Scripting Engine"
         if "masscan" in data_str.lower(): return "Masscan"
         if "zgrab" in data_str.lower(): return "ZGrab Scanner"
-        if "censys" in data_str.lower(): return "CensysInspect"
         if "shodan" in data_str.lower(): return "Shodan Bot"
         
-        # Firmas binarias comunes
         if data_hex.startswith("474554202f2048545450"): return "Generic HTTP Bot"
         if data_hex.startswith("5353482d322e30"): return "SSH Brute-forcer"
-        if "000001000001000000000000" in data_hex: return "Nmap DNS Version Probe"
         
-        if not data: return "TCP Stealth Scan (No Payload)"
-        return "Unknown Bot / Custom Script"
+        if not data: return "TCP Stealth Scan"
+        return "Unknown Bot"
 
-    def log_event(self, ip, port, local_port, scanner, payload):
+    def log_event(self, ip, port, local_port, scanner, payload, intel_data=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         hostname = "N/A"
         try: hostname = socket.gethostbyaddr(ip)[0]
         except: pass
 
-        # Payload resumido para el log
         payload_preview = binascii.hexlify(payload[:32]).decode('utf-8') + "..." if payload else "None"
         
+        intel_status = "Checked (Safe/Unknown)"
+        if intel_data and intel_data.get('is_malicious'):
+            intel_status = f"🔴 MALICIOUS (Score: {intel_data.get('score')})"
+
         log_entry = (
             f"[{timestamp}] [HIT] {ip} ({hostname}) -> Port:{local_port}\n"
             f"    └─ Scanner: {scanner}\n"
-            f"    └─ Remote Port: {port}\n"
+            f"    └─ Intel: {intel_status}\n"
             f"    └─ First Bytes: {payload_preview}\n"
         )
         
         with open(LOG_FILE, "a", encoding='utf-8') as f:
             f.write(log_entry)
-        print(f"[*] {scanner} detectado desde {ip} en puerto {local_port}")
+        print(f"[*] {scanner} ({intel_status}) desde {ip} en puerto {local_port}")
 
     def handle_client(self, client_socket, addr, local_port):
         if addr[0] in self.whitelist:
@@ -72,17 +74,14 @@ class HellServer:
 
         try:
             client_socket.settimeout(2.0)
-            # Capturar los primeros bytes para análisis
-            try:
-                payload = client_socket.recv(1024)
-            except:
-                payload = b""
+            try: payload = client_socket.recv(1024)
+            except: payload = b""
 
+            # Intel Check & Report
+            intel_result = self.ism_reporter.check_ip(addr[0])
             scanner_type = self.detect_scanner(payload)
-            self.log_event(addr[0], addr[1], local_port, scanner_type, payload)
-            
-            # Reportar a VirusTotal
-            self.reporter.report_ip(addr[0])
+            self.log_event(addr[0], addr[1], local_port, scanner_type, payload, intel_result)
+            self.vt_reporter.report_ip(addr[0])
 
             # --- Ejecutar Contraataque ---
             if local_port in WEB_PORTS:

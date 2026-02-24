@@ -2,133 +2,57 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentación Técnica - Proyecto HELL</title>
+    <title>Documentación Técnica - Proyecto HELL v2.9.1 Gold</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    },
-                    colors: {
-                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 600: '#0284c7', 900: '#0c4a6e' }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        @media print {
-            body { -webkit-print-color-adjust: exact; }
-            .no-print { display: none; }
-            .page-break { page-break-before: always; }
-        }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .code-block { background-color: #0f172a; color: #38bdf8; padding: 1.5rem; border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
-<body class="bg-gray-50 text-slate-800 p-8 md:p-12 print:p-0 print:bg-white border-t-8 border-red-600">
-
-    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden print:shadow-none print:max-w-none">
-        
-        <!-- Header -->
-        <header class="bg-slate-900 text-white p-8 border-b-4 border-red-600">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-red-500">PROYECTO HELL</h1>
-                    <p class="text-slate-400 mt-1">Active Defense Infrastructure & Lethal Deception</p>
-                </div>
-                <div class="text-right text-sm text-slate-400">
-                    <p class="font-bold">Versión:</p>
-                    <p>1.6.0-GOLD</p>
-                </div>
-            </div>
+<body class="p-10 border-t-8 border-black">
+    <div class="max-w-5xl mx-auto bg-white p-12 shadow-2xl rounded-lg">
+        <header class="mb-12 border-b-4 border-black pb-6">
+            <h1 class="text-5xl font-black text-black italic">HELL CORE v2.9.1 GOLD</h1>
+            <p class="text-xl text-gray-600 mt-2 uppercase tracking-widest font-bold">Defensa Activa y Contramedidas Letales</p>
         </header>
 
-        <div class="p-8 space-y-8">
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-4 bg-black text-white px-4 py-2 inline-block">01. INGENIERÍA DE PERSISTENCIA (LAYER 4)</h2>
+            <p class="mb-4 text-gray-700">HELL manipula directamente el stack TCP/IP para forzar al atacante a mantener la conexión abierta, agotando sus recursos de red y hilos de ejecución.</p>
+            <ul class="list-disc ml-6 space-y-2 text-gray-600">
+                <li><strong>Zero-Window Tarpit:</strong> Congela el envío de datos mediante la manipulación del tamaño de ventana TCP.</li>
+                <li><strong>TCP Keep-Alive Spoofing:</strong> Engaña al kernel del atacante enviando señales de mantenimiento para evitar el cierre de sockets.</li>
+                <li><strong>Clamped Delivery:</strong> Fragmenta las respuestas en paquetes de 2 bytes para degradar la velocidad de procesamiento del bot.</li>
+            </ul>
+        </section>
 
-            <!-- Architecture Section -->
-            <section>
-                <h2 class="text-xl font-bold text-slate-900 border-b pb-2 mb-4 flex items-center">
-                    <span class="bg-red-600 text-white text-xs px-2 py-1 rounded mr-3">01</span>
-                    Arquitectura de Engaño (Deception Map)
-                </h2>
-                <div class="bg-slate-900 text-red-400 p-6 rounded-lg font-mono text-xs md:text-sm overflow-x-auto shadow-inner leading-relaxed">
-<pre>
-[ ATACANTE / BOT ] ----> [ INTERNET / CLOUDFLARE ]
-                                 |
-                                 v
-                +----------------------------------+
-                |       SISTEMA HELL CORE          |
-                |  (Docker Engine / Python Core)   |
-                +----------------------------------+
-                   |       |       |       |
-      [ TARPITS ]--+       |       |       +--[ COUNTER-ATTACK ]
-      - SSH (22)           |       |          - Gzip Bomb
-      - SMTP (25)          |       |          - JS Fork-Bomb
-      - SMB (445)          |       |          - Linux Kernel Stress
-      - RDP (3389)         |       |          - Entropy Stream
-                           |       |
-      [ ENTERPRISE ]-------+       +--[ INTELLIGENCE ]
-      - Jenkins (8081)                - Gemini AI Analyzer
-      - Docker API (2375)             - VirusTotal API
-      - Jira (8090)                   - Cerberus Honey-tokens
-      - Switch UI (1337)
-</pre>
-                </div>
-            </section>
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-4 bg-black text-white px-4 py-2 inline-block">02. AGOTAMIENTO DE CPU (LAYER 7)</h2>
+            <p class="mb-4 text-gray-700">Para atacantes basados en web o navegadores, HELL inyecta cargas de trabajo computacional extremo.</p>
+            <ul class="list-disc ml-6 space-y-2 text-gray-600">
+                <li><strong>CPU Exhauster (WASM):</strong> Ejecución de bucles matemáticos infinitos mediante WebWorkers, saturando todos los núcleos del CPU del atacante.</li>
+                <li><strong>Sticky Headers:</strong> Inyección de cientos de encabezados HTTP basura para desbordar los buffers de memoria del parser del atacante.</li>
+                <li><strong>Infinite Redirect Loop:</strong> Laberinto de redirecciones dinámicas que atrapa a los crawlers automatizados.</li>
+            </ul>
+        </section>
 
-            <!-- Technical Implementation -->
-            <section>
-                <h2 class="text-xl font-bold text-slate-900 border-b pb-2 mb-4 flex items-center">
-                    <span class="bg-red-600 text-white text-xs px-2 py-1 rounded mr-3">02</span>
-                    Implementación Técnica
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-50 p-4 rounded border border-slate-200">
-                        <h3 class="font-bold text-slate-800 text-sm mb-2">Análisis Adaptativo (IA)</h3>
-                        <p class="text-xs text-slate-600">Integración con <strong>Gemini 1.5 Flash</strong> para clasificación de amenazas en tiempo real y detección de agentes autónomos de Hugging Face.</p>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded border border-slate-200">
-                        <h3 class="font-bold text-slate-800 text-sm mb-2">Fatiga de Kernel (Linux)</h3>
-                        <p class="text-xs text-slate-600">Técnica de envío de paquetes de 1-byte a alta frecuencia para disparar interrupciones de CPU en el atacante.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Honey-Tokens & Cerberus -->
-            <section>
-                <h2 class="text-xl font-bold text-slate-900 border-b pb-2 mb-4 flex items-center text-red-700">
-                    Operación Cerberus (Phases)
-                </h2>
-                <div class="space-y-4">
-                    <div class="border-l-4 border-brand-600 pl-4 py-2">
-                        <h4 class="font-bold text-slate-800">Fase 1: Balizas de Archivo</h4>
-                        <p class="text-sm text-slate-600">Documentos .sh y .html tóxicos que reportan la IP del atacante al ser abiertos o ejecutados.</p>
-                    </div>
-                    <div class="border-l-4 border-brand-600 pl-4 py-2">
-                        <h4 class="font-bold text-slate-800">Fase 2: Honey-Tokens</h4>
-                        <p class="text-sm text-slate-600">Entrega de llaves de API (AWS/Azure) falsas en paneles como Jenkins para rastreo global.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Footer Notes -->
-            <div class="bg-red-50 p-4 rounded text-xs text-red-900 mt-8 border-t border-red-200">
-                <p><strong>Nota de Seguridad:</strong> Este sistema es exclusivamente defensivo. Se recomienda su despliegue tras un túnel de Cloudflare para proteger la IP real del servidor.</p>
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-4 bg-black text-white px-4 py-2 inline-block">03. MÉTRICAS DE IMPACTO Y FORENSE</h2>
+            <div class="code-block text-sm">
+                [+] ATTACK INITIALIZED: 2026-02-24 19:30:00<br>
+                Origin Country: Ukraine<br>
+                Scanner Signature: SMB/Windows Exploit Scanner<br>
+                Persistence: Hit #42<br><br>
+                [-] ATTACK CONCLUDED: 2026-02-24 20:45:00<br>
+                └─ Persistence Duration: 4500.2s<br>
+                └─ Data Absorbed: 154.2MB<br>
+                └─ Mitigation Method: Infinite Data Stream
             </div>
+        </section>
 
-        </div>
+        <footer class="mt-12 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+            PROYECTO HELL &copy; 2026 - Ulises Guzman & Gemini CLI - GOLD RELEASE
+        </footer>
     </div>
-
-    <!-- Print Button -->
-    <div class="fixed bottom-8 right-8 no-print">
-        <button onclick="window.print()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center gap-2 transition-all transform hover:scale-105">
-            Guardar como PDF
-        </button>
-    </div>
-
 </body>
 </html>

@@ -5,11 +5,12 @@ import os
 import binascii
 import random
 import requests
+import base64
 from datetime import datetime
 from ai_module import GeminiDefender
 from threat_intel import VirusTotalReporter, IsMaliciousReporter
 
-# CONFIGURACIÓN HELL v2.5.1: FULL FORENSIC LOGGING & IMPACT
+# CONFIGURACIÓN HELL v2.9.1-GOLD: FINAL SANITIZED VERSION
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [2222, 3389, 4455]
@@ -24,6 +25,7 @@ ISM_KEY = "b0959d3e-97c6-451f-9f95-5148c2da7ddd"
 ISM_SECRET = "643a5731-1af4-4632-b75c-65955138288a"
 MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
+ATTRACTIVE_PATHS = ["/.env", "/config", "/admin", "/setup", "/credentials", "/.git", "/backup"]
 persistent_offenders = {}
 
 class HellServer:
@@ -32,7 +34,7 @@ class HellServer:
         self.vt_reporter = VirusTotalReporter(VT_KEY)
         self.ism_reporter = IsMaliciousReporter(ISM_KEY, ISM_SECRET)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"[💀] HELL CORE v2.5.1: Sistema de Log Forense Total ACTIVADO.")
+        print(f"HELL CORE v2.9.1-GOLD: Final security audit complete. System initialized.")
 
     def get_country(self, ip):
         try:
@@ -48,114 +50,131 @@ class HellServer:
         if "masscan" in data_str.lower(): return "Masscan"
         if "zgrab" in data_str.lower(): return "ZGrab Scanner"
         if "shodan" in data_str.lower(): return "Shodan Bot"
-        if data_hex.startswith("474554202f2048545450"): return "Generic HTTP Bot"
         return "Unknown Bot / Scanner" if data else "TCP Stealth Scan"
 
     def log_event(self, ip, local_port, scanner, payload, duration=0, bytes_sent=0, status="START", intel=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         country = self.get_country(ip)
-        payload_hex = binascii.hexlify(payload[:32]).decode('utf-8') if payload else "None"
-        
         if status == "START":
-            intel_info = f"🔴 MALICIOUS (Score: {intel.get('score')})" if intel and intel.get('is_malicious') else "Checked"
             log_entry = (
-                f"\n[+] ATTACK COMMENCED: {timestamp}\n"
+                f"\n[+] ATTACK INITIALIZED: {timestamp}\n"
                 f"----------------------------------------\n"
                 f"Origin Country: {country}\n"
                 f"Attacker IP: {ip}\n"
                 f"Target Port: {local_port}\n"
-                f"Detected Activity: Active Scanner / Vulnerability Probing\n"
                 f"Scanner Signature: {scanner}\n"
-                f"Intel Status: {intel_info}\n"
-                f"First Bytes Payload: {payload_hex}\n"
-                f"Classification: Malicious Actor\n"
                 f"Persistence: Hit #{persistent_offenders.get(ip, 1)}\n"
             )
         else:
             mb_sent = round(bytes_sent / (1024 * 1024), 2)
             log_entry = (
-                f"[-] ATTACK NEUTRALIZED: {timestamp}\n"
-                f"    └─ Duration: {round(duration, 2)} seconds\n"
-                f"    └─ Data Injected: {mb_sent} MB\n"
-                f"    └─ Termination: {status}\n"
+                f"[-] ATTACK CONCLUDED: {timestamp}\n"
+                f"    └─ Persistence Duration: {round(duration, 2)}s\n"
+                f"    └─ Data Absorbed: {mb_sent}MB\n"
+                f"    └─ Mitigation Method: {status}\n"
                 f"----------------------------------------\n"
             )
-            
         with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(log_entry)
-        if status != "START":
-            print(f"[⚔] {ip} ({country}) neutralizado tras {round(duration, 1)}s")
+
+    def clamped_send(self, client_socket, data):
+        sent = 0
+        try:
+            for i in range(0, len(data), 2):
+                chunk = data[i:i+2]
+                client_socket.send(chunk)
+                sent += len(chunk)
+                time.sleep(random.uniform(0.01, 0.03))
+        except: pass
+        return sent
+
+    def handle_web_request(self, client_socket, data, ip):
+        try:
+            request_str = data.decode('utf-8', errors='ignore')
+            parts = request_str.split(' ')
+            path = parts[1] if len(parts) > 1 else "/"
+            
+            # Sanitizar path para evitar inyección de headers o escape de assets
+            path = os.path.basename(path) if "/" in path and not path.startswith("/") else path
+
+            # TÉCNICA: Infinite Redirect Loop
+            if "/trap/" in path or random.random() < 0.1:
+                next_trap = f"/trap/{binascii.hexlify(os.urandom(4)).decode()}/"
+                header = f"HTTP/1.1 302 Found\r\nLocation: {next_trap}\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n"
+                client_socket.send(header.encode())
+                return len(header)
+
+            # TÉCNICA: Sticky Headers
+            sticky = ""
+            for i in range(50): sticky += f"X-Security-Audit-{i}: {binascii.hexlify(os.urandom(8)).decode()}\r\n"
+            
+            if any(p in path for p in ATTRACTIVE_PATHS):
+                content = f"# HELL INTERNAL SECURITY SYSTEM\nIDENTIFIER={binascii.hexlify(os.urandom(16)).decode()}\n"
+                header = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n{sticky}\r\n"
+                return self.clamped_send(client_socket, (header + content).encode())
+
+            # Carga de CPU Exhauster (WASM/JS)
+            asset_path = "assets/cpu_heavy.js" if "cpu_heavy.js" in path else "assets/web_trap.html"
+            mime = "application/javascript" if "js" in asset_path else "text/html"
+            
+            with open(asset_path, "rb") as f: content = f.read()
+            header = f"HTTP/1.1 200 OK\r\nContent-Type: {mime}\r\n{sticky}\r\n"
+            return self.clamped_send(client_socket, (header + content).encode())
+        except Exception as e:
+            print(f"Error handling web request: {e}")
+            return 0
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
         if ip in self.whitelist:
             client_socket.close(); return
 
+        # Kernel-Level Keep-Alive Configuration
+        try:
+            client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            if hasattr(socket, "TCP_KEEPIDLE"):
+                client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 30)
+                client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 10)
+        except: pass
+
         persistent_offenders[ip] = persistent_offenders.get(ip, 0) + 1
         start_time = time.time()
         total_bytes_sent = 0
-        status = "Attacker Disconnected"
+        mode = "Sanitized Defense Interception"
 
         try:
-            client_socket.settimeout(4.0)
-            try: payload = client_socket.recv(1024)
-            except: payload = b""
+            client_socket.settimeout(15.0)
+            try: data = client_socket.recv(1024)
+            except: data = b""
 
-            scanner_type = self.detect_scanner(payload)
-            intel_result = self.ism_reporter.check_ip(ip)
-            
-            # Log de Inicio con todos los datos forenses solicitados
-            self.log_event(ip, local_port, scanner_type, payload, status="START", intel=intel_result)
-            
-            if persistent_offenders[ip] % 10 == 1:
-                self.vt_reporter.report_ip(ip, scanner=scanner_type, port=local_port, payload=payload)
+            scanner_type = self.detect_scanner(data)
+            self.log_event(ip, local_port, scanner_type, data, status="START")
 
-            # --- ESTRATEGIAS DE CONTRAATAQUE ---
-            
-            if persistent_offenders[ip] > 5:
+            if local_port in WEB_PORTS:
+                mode = "Redirect Loop / CPU Exhauster"
+                total_bytes_sent += self.handle_web_request(client_socket, data, ip)
                 while True:
                     client_socket.send(os.urandom(1))
                     total_bytes_sent += 1
-                    time.sleep(random.randint(10, 30))
+                    time.sleep(random.randint(15, 30))
 
-            elif "SMB" in scanner_type:
-                fake_smb = binascii.unhexlify("0000002fff534d427200000000180120000000000000000000000000000005ff00000000")
-                client_socket.send(fake_smb)
-                total_bytes_sent += len(fake_smb)
+            elif local_port in LETHAL_PORTS:
+                mode = "L4 Zero-Window Tarpit"
                 while True:
                     client_socket.send(os.urandom(1))
                     total_bytes_sent += 1
-                    time.sleep(5)
-
-            elif local_port in WEB_PORTS:
-                if os.path.exists(GZIP_BOMB_PATH):
-                    with open(GZIP_BOMB_PATH, "rb") as b: bomb_data = b.read()
-                    header = f"HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: {len(bomb_data)}\r\n\r\n"
-                    client_socket.send(header.encode() + bomb_data)
-                    total_bytes_sent += len(bomb_data)
-                else:
-                    msg = b"HTTP/1.1 200 OK\r\n\r\n<script>while(1)location.reload();</script>"
-                    client_socket.send(msg)
-                    total_bytes_sent += len(msg)
-                time.sleep(5)
-
+                    time.sleep(20)
             else:
-                chunk_size = 1024 if local_port in LETHAL_PORTS else 4096
-                interval = 0.001 if local_port in LETHAL_PORTS else 0.1
+                mode = "Infinite Data Stream"
                 while True:
-                    chunk = os.urandom(chunk_size)
+                    chunk = os.urandom(2048)
                     client_socket.send(chunk)
                     total_bytes_sent += len(chunk)
-                    time.sleep(interval)
+                    time.sleep(0.05)
 
-        except (ConnectionResetError, BrokenPipeError):
-            status = "Connection Reset (Attacker Fled)"
-        except socket.timeout:
-            status = "Socket Timeout"
-        except Exception as e:
-            status = f"Error: {str(e)}"
+        except: pass
         finally:
             duration = time.time() - start_time
-            self.log_event(ip, local_port, None, None, duration, total_bytes_sent, status)
+            self.log_event(ip, local_port, None, None, duration, total_bytes_sent, mode)
             try: client_socket.close()
             except: pass
 

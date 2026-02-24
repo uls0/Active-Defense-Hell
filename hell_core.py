@@ -6,7 +6,7 @@ import binascii
 from ai_module import GeminiDefender
 from threat_intel import VirusTotalReporter, IsMaliciousReporter
 
-# CONFIGURACIÓN HELL v2.3.1: INTELLIGENCE SYNC
+# CONFIGURACIÓN HELL v2.3.2: PROFESSIONAL REPORTING
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [2222, 3389, 4455]
@@ -27,63 +27,48 @@ class HellServer:
         self.vt_reporter = VirusTotalReporter(VT_KEY)
         self.ism_reporter = IsMaliciousReporter(ISM_KEY, ISM_SECRET)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"[💀] HELL CORE v2.3.1: Vigilando {len(PORTS)} puertos con Intelligence Sync.")
+        print(f"[💀] HELL CORE v2.3.2: Vigilando {len(PORTS)} puertos con Reporte Profesional.")
 
     def detect_scanner(self, data):
-        """Identifica la herramienta de escaneo basada en firmas de payload."""
         data_str = data.decode('utf-8', errors='ignore')
         data_hex = binascii.hexlify(data).decode('utf-8')
-
         if "nmap" in data_str.lower(): return "Nmap Scripting Engine"
         if "masscan" in data_str.lower(): return "Masscan"
         if "zgrab" in data_str.lower(): return "ZGrab Scanner"
         if "shodan" in data_str.lower(): return "Shodan Bot"
-        
         if data_hex.startswith("474554202f2048545450"): return "Generic HTTP Bot"
         if data_hex.startswith("5353482d322e30"): return "SSH Brute-forcer"
-        
-        if not data: return "TCP Stealth Scan"
-        return "Unknown Bot"
+        return "Unknown Bot / Scanner" if data else "TCP Stealth Scan"
 
     def log_event(self, ip, port, local_port, scanner, payload, intel_data=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        hostname = "N/A"
-        try: hostname = socket.gethostbyaddr(ip)[0]
-        except: pass
-
         payload_preview = binascii.hexlify(payload[:32]).decode('utf-8') + "..." if payload else "None"
+        intel_status = f"🔴 MALICIOUS (Score: {intel_data.get('score')})" if intel_data and intel_data.get('is_malicious') else "Checked"
         
-        intel_status = "Checked (Safe/Unknown)"
-        if intel_data and intel_data.get('is_malicious'):
-            intel_status = f"🔴 MALICIOUS (Score: {intel_data.get('score')})"
-
         log_entry = (
-            f"[{timestamp}] [HIT] {ip} ({hostname}) -> Port:{local_port}\n"
-            f"    └─ Scanner: {scanner}\n"
-            f"    └─ Intel: {intel_status}\n"
-            f"    └─ First Bytes: {payload_preview}\n"
+            f"[{timestamp}] [HIT] {ip} -> Port:{local_port}\n"
+            f"    └─ Scanner: {scanner} | Intel: {intel_status}\n"
+            f"    └─ Payload: {payload_preview}\n"
         )
-        
-        with open(LOG_FILE, "a", encoding='utf-8') as f:
-            f.write(log_entry)
-        print(f"[*] {scanner} ({intel_status}) desde {ip} en puerto {local_port}")
+        with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(log_entry)
+        print(f"[*] {scanner} desde {ip}")
 
     def handle_client(self, client_socket, addr, local_port):
         if addr[0] in self.whitelist:
             client_socket.close(); return
-
         try:
             client_socket.settimeout(2.0)
             try: payload = client_socket.recv(1024)
             except: payload = b""
 
-            # Intel Check & Report
-            intel_result = self.ism_reporter.check_ip(addr[0])
             scanner_type = self.detect_scanner(payload)
+            intel_result = self.ism_reporter.check_ip(addr[0])
             self.log_event(addr[0], addr[1], local_port, scanner_type, payload, intel_result)
-            self.vt_reporter.report_ip(addr[0])
+            
+            # REPORTE PROFESIONAL A VIRUSTOTAL
+            self.vt_reporter.report_ip(addr[0], scanner=scanner_type, port=local_port, payload=payload)
 
-            # --- Ejecutar Contraataque ---
+            # --- Contraataque ---
             if local_port in WEB_PORTS:
                 if os.path.exists(GZIP_BOMB_PATH):
                     with open(GZIP_BOMB_PATH, "rb") as b: bomb_data = b.read()
@@ -91,16 +76,10 @@ class HellServer:
                     client_socket.send(header.encode() + bomb_data)
                 else:
                     client_socket.send(b"HTTP/1.1 200 OK\r\n\r\n<script>while(1)location.reload();</script>")
-
             elif local_port in LETHAL_PORTS:
-                while True:
-                    client_socket.send(os.urandom(1024))
-                    time.sleep(0.001)
+                while True: client_socket.send(os.urandom(1024)); time.sleep(0.001)
             else:
-                while True:
-                    client_socket.send(os.urandom(4096))
-                    time.sleep(0.1)
-
+                while True: client_socket.send(os.urandom(4096)); time.sleep(0.1)
         except: pass
         finally:
             try: client_socket.close()

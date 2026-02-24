@@ -9,7 +9,6 @@ class VirusTotalReporter:
         self.enabled = True if api_key else False
 
     def get_country(self, ip):
-        """Obtiene el país de la IP usando ip-api (gratuito)"""
         try:
             response = requests.get(f"http://ip-api.com/json/{ip}?fields=country", timeout=5)
             if response.status_code == 200:
@@ -18,47 +17,20 @@ class VirusTotalReporter:
         return "Unknown"
 
     def report_ip(self, ip_address, scanner="Unknown", port=0, payload=b""):
-        """Registra un reporte profesional en VirusTotal con metadatos forenses"""
-        if not self.enabled:
-            return
-            
+        if not self.enabled: return
         country = self.get_country(ip_address)
         payload_hex = binascii.hexlify(payload[:32]).decode('utf-8') if payload else "None"
-        
-        # Formato profesional en lista
         report_text = (
-            f"HELL ACTIVE DEFENSE REPORT\n"
-            f"---------------------------\n"
-            f"Origin Country: {country}\n"
-            f"Detected Activity: Active Scanner / Vulnerability Probing\n"
-            f"Target Port: {port}\n"
-            f"Scanner Signature: {scanner}\n"
-            f"First Bytes Payload: {payload_hex}\n"
+            f"HELL ACTIVE DEFENSE REPORT\n---------------------------\n"
+            f"Origin Country: {country}\nDetected Activity: Active Scanner / Vulnerability Probing\n"
+            f"Target Port: {port}\nScanner Signature: {scanner}\nFirst Bytes Payload: {payload_hex}\n"
             f"Classification: Malicious Actor"
         )
-
         url = f"https://www.virustotal.com/api/v3/ip_addresses/{ip_address}/comments"
-        headers = {
-            "x-apikey": self.api_key,
-            "Content-Type": "application/json"
-        }
-        data = {
-            "data": {
-                "type": "comment",
-                "attributes": {
-                    "text": report_text
-                }
-            }
-        }
-        
+        headers = {"x-apikey": self.api_key, "Content-Type": "application/json"}
         try:
-            response = requests.post(url, json=data, headers=headers)
-            if response.status_code == 200:
-                print(f"[📡] Reporte forense de {ip_address} enviado a VirusTotal.")
-            else:
-                print(f"[!] VT Error {response.status_code}: {response.text}")
-        except Exception as e:
-            print(f"[!] Error al contactar VirusTotal: {e}")
+            requests.post(url, json={"data": {"type": "comment", "attributes": {"text": report_text}}}, headers=headers)
+        except: pass
 
 class IsMaliciousReporter:
     def __init__(self, api_key, api_secret):
@@ -72,12 +44,15 @@ class IsMaliciousReporter:
             self.header_key = None
 
     def check_ip(self, ip_address):
-        if not self.enabled:
-            return None
+        """Consulta la API de IsMalicious con manejo de errores mejorado"""
+        if not self.enabled: return {"score": 0, "is_malicious": False, "status": "Disabled"}
         url = "https://api.ismalicious.com/v1/check"
-        headers = { "X-API-KEY": self.header_key, "Content-Type": "application/json" }
-        data = {"query": ip_address}
+        headers = {"X-API-KEY": self.header_key, "Content-Type": "application/json"}
         try:
-            response = requests.post(url, json=data, headers=headers, timeout=5)
-            return response.json() if response.status_code == 200 else None
-        except: return None
+            response = requests.post(url, json={"query": ip_address}, headers=headers, timeout=5)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"score": 0, "is_malicious": False, "status": f"HTTP {response.status_code}"}
+        except:
+            return {"score": 0, "is_malicious": False, "status": "Connection Error"}

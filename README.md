@@ -1,7 +1,7 @@
 # HELL: Honeypot Exploitation & Lethal Logging
 ## Enterprise Deception Infrastructure & Autonomous Counter-Offensive System
 
-HELL v4.0.0 is an aggressive active defense ecosystem designed to simulate high-value corporate infrastructure, specifically targeting state-sponsored actors, ransomware operators, and automated AI-theft bots.
+HELL v4.0.0+ is an aggressive active defense ecosystem designed to simulate high-value corporate infrastructure, specifically targeting state-sponsored actors, ransomware operators, and automated AI-theft bots.
 
 ### Core Architecture: Enterprise Deception (v4.0.0-Gold)
 
@@ -38,5 +38,5 @@ HELL provides professional-grade telemetry for every neutralized threat:
 This system is strictly for defensive research and infrastructure protection. Deployment should adhere to local legal frameworks and corporate security policies.
 
 ---
-**Developed by Ulises Guzman & Gemini CLI**
-**Version 4.0.0-GOLD**
+**Designed by ULSO+GCLI**
+**Version 4.0.3-GOLD**

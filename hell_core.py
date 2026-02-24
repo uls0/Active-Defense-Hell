@@ -10,7 +10,7 @@ from datetime import datetime
 from threat_intel import VirusTotalReporter, IsMaliciousReporter
 from scripts import smb_lethal
 
-# CONFIGURACIÓN HELL v4.0.2-GOLD: LOG SYNC & METRICS ACCURACY
+# CONFIGURACIÓN HELL v4.0.3-GOLD: ACCURATE DATA TRACKING
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [22, 2222, 3389, 4455]
@@ -37,7 +37,7 @@ class HellServer:
         self.vt_reporter = VirusTotalReporter(VT_KEY)
         self.ism_reporter = IsMaliciousReporter(ISM_KEY, ISM_SECRET)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"HELL CORE v4.0.2-GOLD: System operational. Intelligence & Metrics refined.")
+        print(f"HELL CORE v4.0.3-GOLD: Full Telemetría de Datos Activada.")
 
     def get_country(self, ip):
         try:
@@ -50,20 +50,17 @@ class HellServer:
         data_hex = binascii.hexlify(data).decode('utf-8')
         if "ff534d42" in data_hex: return "SMB/Windows Scanner"
         if "nmap" in data_str.lower(): return "Nmap"
-        if "zgrab" in data_str.lower(): return "ZGrab"
-        return "Generic Scanner" if data else "Stealth Scan"
+        return "Active Scanner" if data else "Stealth Scan"
 
     def log_event(self, ip, local_port, scanner, payload, duration=0, bytes_sent=0, status="START", intel=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         country = self.get_country(ip)
         if status == "START":
-            # Formatear el estado de inteligencia
             intel_info = "Checking..."
             if intel:
-                if 'score' in intel:
-                    intel_info = f"Score: {intel.get('score')} ({'MALICIOUS' if intel.get('is_malicious') else 'Clean'})"
-                else:
-                    intel_info = f"Status: {intel.get('status', 'Unknown')}"
+                score = intel.get('score', 0)
+                is_mal = "MALICIOUS" if intel.get('is_malicious') else "Unrated/New"
+                intel_info = f"Score: {score} ({is_mal})"
             
             log_entry = (
                 f"\n[+] ENTERPRISE DECEPTION TRIGGERED: {timestamp}\n"
@@ -103,19 +100,16 @@ class HellServer:
 
             intel_result = self.ism_reporter.check_ip(ip)
             scanner_type = self.detect_scanner(data)
-            
-            # Log de Inicio
             self.log_event(ip, local_port, scanner_type, data, status="START", intel=intel_result)
             
-            # Reporte VT
             if persistent_offenders[ip] % 5 == 1:
                 threading.Thread(target=self.vt_reporter.report_ip, args=(ip, scanner_type, local_port, data)).start()
 
             # --- ESTRATEGIAS ---
             if local_port == 445 or b"SMB" in data:
-                final_mode = "SMB Active Trap"
-                # smb_lethal maneja su propio bucle, no llamamos a log_event aquí para evitar duplicidad
-                smb_lethal.handle_smb_attack(client_socket, ip, (lambda *args, **kwargs: None), local_port)
+                final_mode = "SMB Lethal Trap"
+                # Ahora capturamos los bytes enviados por el módulo SMB
+                total_bytes_sent = smb_lethal.handle_smb_attack(client_socket, ip, (lambda *args, **kwargs: None), local_port)
                 return 
 
             elif local_port in LETHAL_PORTS:
@@ -135,7 +129,6 @@ class HellServer:
         except: pass
         finally:
             duration = time.time() - start_time
-            # Solo escribimos el log de neutralización al final real de la conexión
             self.log_event(ip, local_port, None, None, duration, total_bytes_sent, final_mode)
             try: client_socket.close()
             except: pass

@@ -5,176 +5,118 @@ import os
 import binascii
 import random
 import requests
-import base64
 from datetime import datetime
-from ai_module import GeminiDefender
 from threat_intel import VirusTotalReporter, IsMaliciousReporter
 
-# CONFIGURACIÓN HELL v2.9.1-GOLD: FINAL SANITIZED VERSION
+# CONFIGURACIÓN HELL v3.0.0: SATURATION & MEXICAN DECEPTION
 HOST = '0.0.0.0'
-WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
-LETHAL_PORTS = [2222, 3389, 4455]
-RAW_PORTS = [23, 445, 1433, 2323, 2525, 3306, 6379, 1337, 2375, 8125, 5060, 5900, 110, 5555]
 
-PORTS = WEB_PORTS + LETHAL_PORTS + RAW_PORTS
-GZIP_BOMB_PATH = "payloads/bomb.gz"
+# Puertos Especializados
+WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
+LETHAL_PORTS = [22, 2222, 3389, 4455] # Incluimos Puerto 22
+RAW_PORTS = [21, 23, 25, 445, 1433, 2323, 2525, 3306, 6379, 1337, 2375, 8125, 5060, 5900, 110, 5555]
+
+# Generar lista de saturación (Top 100 Nmap saltando los ya usados)
+TOP_100_NMAP = [1, 3, 7, 9, 13, 17, 19, 21, 22, 23, 25, 26, 37, 53, 79, 80, 81, 88, 106, 110, 111, 113, 119, 135, 139, 143, 144, 179, 199, 389, 427, 443, 444, 445, 465, 513, 514, 515, 543, 544, 548, 554, 587, 631, 646, 873, 990, 993, 995, 1025, 1026, 1027, 1028, 1029, 1110, 1433, 1720, 1723, 1755, 1900, 2000, 2049, 2121, 2717, 3000, 3128, 3306, 3389, 3986, 4899, 5000, 5009, 5051, 5060, 5101, 5190, 5357, 5432, 5631, 5666, 5800, 5900, 6000, 6001, 6646, 7070, 8000, 8008, 8009, 8080, 8081, 8443, 8888, 9100, 9999, 10000, 32768, 49152, 49153, 49154, 49155, 49156, 49157]
+SATURATION_PORTS = list(set(TOP_100_NMAP) - set(WEB_PORTS) - set(LETHAL_PORTS) - set(RAW_PORTS))
+
+PORTS = WEB_PORTS + LETHAL_PORTS + RAW_PORTS + SATURATION_PORTS
 LOG_FILE = "logs/hell_activity.log"
 
 VT_KEY = os.getenv("VT_API_KEY", "")
 ISM_KEY = "b0959d3e-97c6-451f-9f95-5148c2da7ddd"
 ISM_SECRET = "643a5731-1af4-4632-b75c-65955138288a"
-MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
-ATTRACTIVE_PATHS = ["/.env", "/config", "/admin", "/setup", "/credentials", "/.git", "/backup"]
+# Tracker de Port-Hopping {ip: [puertos_visitados]}
+scan_sequences = {}
 persistent_offenders = {}
+
+# Banners Mexicanos Dinámicos
+MEXICAN_BANNERS = {
+    21: "220 (vsFTPd 3.0.5) - Nodo-Transferencia-Pemex-Logistica\r\n",
+    22: "SSH-2.0-OpenSSH_8.9p1 (SISTEMAS-BANXICO-NODE-04)\r\n",
+    23: "\r\nAcceso Restringido - Red Interna Telmex-Infinitum\r\nlogin: ",
+    25: "220 mail.gob.mx ESMTP Postfix - Secretaria de Hacienda\r\n",
+    110: "+OK POP3 Ready (Servidor de Correo Corporativo Soriana)\r\n",
+    1433: "MSSQL Server 2019 - Node: MX-CORP-DATA-01\r\n",
+    3306: "5.7.33-0ubuntu0.18.04.1 (MySQL-Server-Bimbo-Produccion)\r\n"
+}
 
 class HellServer:
     def __init__(self):
         os.makedirs("logs", exist_ok=True)
         self.vt_reporter = VirusTotalReporter(VT_KEY)
         self.ism_reporter = IsMaliciousReporter(ISM_KEY, ISM_SECRET)
-        self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"HELL CORE v2.9.1-GOLD: Final security audit complete. System initialized.")
+        print(f"HELL CORE v3.0.0: MODO SATURACION ACTIVADO. {len(PORTS)} puertos abiertos.")
 
-    def get_country(self, ip):
-        try:
-            r = requests.get(f"http://ip-api.com/json/{ip}?fields=country", timeout=3)
-            return r.json().get('country', 'Unknown') if r.status_code == 200 else "Unknown"
-        except: return "Unknown"
+    def track_scan(self, ip, port):
+        """Detecta patrones de escaneo secuencial"""
+        if ip not in scan_sequences: scan_sequences[ip] = []
+        scan_sequences[ip].append(port)
+        if len(scan_sequences[ip]) > 3:
+            seq = scan_sequences[ip][-3:]
+            # Si los últimos 3 puertos son seguidos (ej 21, 22, 23)
+            if abs(seq[0] - seq[1]) <= 2 and abs(seq[1] - seq[2]) <= 2:
+                return True
+        return False
 
-    def detect_scanner(self, data):
-        data_str = data.decode('utf-8', errors='ignore')
-        data_hex = binascii.hexlify(data).decode('utf-8')
-        if "ff534d42" in data_hex: return "SMB/Windows Exploit Scanner"
-        if "nmap" in data_str.lower(): return "Nmap Scripting Engine"
-        if "masscan" in data_str.lower(): return "Masscan"
-        if "zgrab" in data_str.lower(): return "ZGrab Scanner"
-        if "shodan" in data_str.lower(): return "Shodan Bot"
-        return "Unknown Bot / Scanner" if data else "TCP Stealth Scan"
-
-    def log_event(self, ip, local_port, scanner, payload, duration=0, bytes_sent=0, status="START", intel=None):
+    def log_event(self, ip, local_port, scanner, status="START", intel=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        country = self.get_country(ip)
-        if status == "START":
-            log_entry = (
-                f"\n[+] ATTACK INITIALIZED: {timestamp}\n"
-                f"----------------------------------------\n"
-                f"Origin Country: {country}\n"
-                f"Attacker IP: {ip}\n"
-                f"Target Port: {local_port}\n"
-                f"Scanner Signature: {scanner}\n"
-                f"Persistence: Hit #{persistent_offenders.get(ip, 1)}\n"
-            )
-        else:
-            mb_sent = round(bytes_sent / (1024 * 1024), 2)
-            log_entry = (
-                f"[-] ATTACK CONCLUDED: {timestamp}\n"
-                f"    └─ Persistence Duration: {round(duration, 2)}s\n"
-                f"    └─ Data Absorbed: {mb_sent}MB\n"
-                f"    └─ Mitigation Method: {status}\n"
-                f"----------------------------------------\n"
-            )
+        log_entry = f"[{timestamp}] [{status}] IP: {ip} | Port: {local_port} | Signature: {scanner} | Hits: {persistent_offenders.get(ip, 1)}\n"
         with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(log_entry)
-
-    def clamped_send(self, client_socket, data):
-        sent = 0
-        try:
-            for i in range(0, len(data), 2):
-                chunk = data[i:i+2]
-                client_socket.send(chunk)
-                sent += len(chunk)
-                time.sleep(random.uniform(0.01, 0.03))
-        except: pass
-        return sent
-
-    def handle_web_request(self, client_socket, data, ip):
-        try:
-            request_str = data.decode('utf-8', errors='ignore')
-            parts = request_str.split(' ')
-            path = parts[1] if len(parts) > 1 else "/"
-            
-            # Sanitizar path para evitar inyección de headers o escape de assets
-            path = os.path.basename(path) if "/" in path and not path.startswith("/") else path
-
-            # TÉCNICA: Infinite Redirect Loop
-            if "/trap/" in path or random.random() < 0.1:
-                next_trap = f"/trap/{binascii.hexlify(os.urandom(4)).decode()}/"
-                header = f"HTTP/1.1 302 Found\r\nLocation: {next_trap}\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n"
-                client_socket.send(header.encode())
-                return len(header)
-
-            # TÉCNICA: Sticky Headers
-            sticky = ""
-            for i in range(50): sticky += f"X-Security-Audit-{i}: {binascii.hexlify(os.urandom(8)).decode()}\r\n"
-            
-            if any(p in path for p in ATTRACTIVE_PATHS):
-                content = f"# HELL INTERNAL SECURITY SYSTEM\nIDENTIFIER={binascii.hexlify(os.urandom(16)).decode()}\n"
-                header = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n{sticky}\r\n"
-                return self.clamped_send(client_socket, (header + content).encode())
-
-            # Carga de CPU Exhauster (WASM/JS)
-            asset_path = "assets/cpu_heavy.js" if "cpu_heavy.js" in path else "assets/web_trap.html"
-            mime = "application/javascript" if "js" in asset_path else "text/html"
-            
-            with open(asset_path, "rb") as f: content = f.read()
-            header = f"HTTP/1.1 200 OK\r\nContent-Type: {mime}\r\n{sticky}\r\n"
-            return self.clamped_send(client_socket, (header + content).encode())
-        except Exception as e:
-            print(f"Error handling web request: {e}")
-            return 0
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
-        if ip in self.whitelist:
-            client_socket.close(); return
-
-        # Kernel-Level Keep-Alive Configuration
-        try:
-            client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-            if hasattr(socket, "TCP_KEEPIDLE"):
-                client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 30)
-                client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 10)
-        except: pass
-
         persistent_offenders[ip] = persistent_offenders.get(ip, 0) + 1
-        start_time = time.time()
-        total_bytes_sent = 0
-        mode = "Sanitized Defense Interception"
-
+        is_hopping = self.track_scan(ip, local_port)
+        
         try:
-            client_socket.settimeout(15.0)
+            client_socket.settimeout(10.0)
+            scanner_type = "Unknown"
+            
+            # --- FASE 1: BANNER DECEPCION ---
+            if local_port in MEXICAN_BANNERS:
+                client_socket.send(MEXICAN_BANNERS[local_port].encode())
+            
+            # Recibir datos para identificar escaner
             try: data = client_socket.recv(1024)
             except: data = b""
+            
+            self.log_event(ip, local_port, "Active Bot", status="HIT")
 
-            scanner_type = self.detect_scanner(data)
-            self.log_event(ip, local_port, scanner_type, data, status="START")
+            # --- FASE 2: CONTRAMEDIDAS ---
 
-            if local_port in WEB_PORTS:
-                mode = "Redirect Loop / CPU Exhauster"
-                total_bytes_sent += self.handle_web_request(client_socket, data, ip)
+            # A. KILLSWITCH PARA PORT-HOPPING
+            if is_hopping:
+                print(f"Port-Hopping detectado desde {ip}. Enviando Garbage Killswitch.")
+                # Enviar basura de alta entropía que rompe parsers de Nmap
+                client_socket.send(os.urandom(1024) + b"\x00\xff\x00\xff")
+                time.sleep(1)
+                return
+
+            # B. SMB TRAP AVANZADO (Pending Status)
+            if local_port == 445 or b"SMB" in data:
+                # Responder con un paquete SMB2 "STATUS_PENDING"
+                pending_pkt = binascii.unhexlify("fe534d4240000000050000000000000000000000000000000000000000000000")
+                client_socket.send(pending_pkt)
                 while True:
-                    client_socket.send(os.urandom(1))
-                    total_bytes_sent += 1
-                    time.sleep(random.randint(15, 30))
+                    time.sleep(30)
+                    client_socket.send(b"\x00")
 
+            # C. LETHAL TARPIT (Port 22, 3389, etc)
             elif local_port in LETHAL_PORTS:
-                mode = "L4 Zero-Window Tarpit"
                 while True:
                     client_socket.send(os.urandom(1))
-                    total_bytes_sent += 1
-                    time.sleep(20)
+                    time.sleep(random.randint(10, 20))
+
+            # D. SATURACION GENERAL
             else:
-                mode = "Infinite Data Stream"
                 while True:
-                    chunk = os.urandom(2048)
-                    client_socket.send(chunk)
-                    total_bytes_sent += len(chunk)
-                    time.sleep(0.05)
+                    client_socket.send(os.urandom(1024))
+                    time.sleep(1)
 
         except: pass
         finally:
-            duration = time.time() - start_time
-            self.log_event(ip, local_port, None, None, duration, total_bytes_sent, mode)
             try: client_socket.close()
             except: pass
 

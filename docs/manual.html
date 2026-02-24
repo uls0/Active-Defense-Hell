@@ -2,56 +2,115 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Documentación Técnica - Proyecto HELL v2.9.1 Gold</title>
+    <title>Documentación Técnica - Proyecto HELL v4.0.0 Enterprise Gold</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .code-block { background-color: #0f172a; color: #38bdf8; padding: 1.5rem; border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; }
+        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .code-block { background-color: #020617; color: #38bdf8; padding: 1.5rem; border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; border-left: 4px solid #ef4444; }
+        .section-header { border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1.5rem; font-weight: 900; letter-spacing: -0.025em; }
     </style>
 </head>
-<body class="p-10 border-t-8 border-black">
-    <div class="max-w-5xl mx-auto bg-white p-12 shadow-2xl rounded-lg">
-        <header class="mb-12 border-b-4 border-black pb-6">
-            <h1 class="text-5xl font-black text-black italic">HELL CORE v2.9.1 GOLD</h1>
-            <p class="text-xl text-gray-600 mt-2 uppercase tracking-widest font-bold">Defensa Activa y Contramedidas Letales</p>
+<body class="p-6 md:p-16 border-t-[12px] border-red-600">
+    <div class="max-w-6xl mx-auto bg-white p-8 md:p-16 shadow-2xl rounded-2xl">
+        
+        <header class="mb-16 border-b-8 border-black pb-8">
+            <h1 class="text-6xl font-black text-black tracking-tighter italic">HELL v4.0.0 ENTERPRISE</h1>
+            <p class="text-2xl text-red-600 mt-2 font-bold uppercase tracking-widest">Active Defense & Enterprise Deception Platform</p>
         </header>
 
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-4 bg-black text-white px-4 py-2 inline-block">01. INGENIERÍA DE PERSISTENCIA (LAYER 4)</h2>
-            <p class="mb-4 text-gray-700">HELL manipula directamente el stack TCP/IP para forzar al atacante a mantener la conexión abierta, agotando sus recursos de red y hilos de ejecución.</p>
-            <ul class="list-disc ml-6 space-y-2 text-gray-600">
-                <li><strong>Zero-Window Tarpit:</strong> Congela el envío de datos mediante la manipulación del tamaño de ventana TCP.</li>
-                <li><strong>TCP Keep-Alive Spoofing:</strong> Engaña al kernel del atacante enviando señales de mantenimiento para evitar el cierre de sockets.</li>
-                <li><strong>Clamped Delivery:</strong> Fragmenta las respuestas en paquetes de 2 bytes para degradar la velocidad de procesamiento del bot.</li>
-            </ul>
-        </section>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-12">
+                
+                <section>
+                    <h2 class="text-3xl section-header uppercase">01. Simulación de Identidad Corporativa</h2>
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        HELL v4.0.0 emula un entorno de infraestructura crítica mexicana (MEX-AD-CORP). El sistema proyecta la identidad de un Controlador de Dominio de alta disponibilidad, atrayendo ataques dirigidos contra el sector financiero e industrial.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 text-sm font-bold">
+                        <div class="bg-gray-100 p-4 border-l-4 border-black">LDAP/S (389/636)</div>
+                        <div class="bg-gray-100 p-4 border-l-4 border-black">KERBEROS (88)</div>
+                        <div class="bg-gray-100 p-4 border-l-4 border-black">RPC/WINRM (135/5985)</div>
+                        <div class="bg-gray-100 p-4 border-l-4 border-black">GLOBAL CATALOG (3268)</div>
+                    </div>
+                </section>
 
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-4 bg-black text-white px-4 py-2 inline-block">02. AGOTAMIENTO DE CPU (LAYER 7)</h2>
-            <p class="mb-4 text-gray-700">Para atacantes basados en web o navegadores, HELL inyecta cargas de trabajo computacional extremo.</p>
-            <ul class="list-disc ml-6 space-y-2 text-gray-600">
-                <li><strong>CPU Exhauster (WASM):</strong> Ejecución de bucles matemáticos infinitos mediante WebWorkers, saturando todos los núcleos del CPU del atacante.</li>
-                <li><strong>Sticky Headers:</strong> Inyección de cientos de encabezados HTTP basura para desbordar los buffers de memoria del parser del atacante.</li>
-                <li><strong>Infinite Redirect Loop:</strong> Laberinto de redirecciones dinámicas que atrapa a los crawlers automatizados.</li>
-            </ul>
-        </section>
+                <section>
+                    <h2 class="text-3xl section-header uppercase">02. Módulo Lethal SMB (Port 445)</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        El puerto 445 utiliza el submódulo <code>smb_lethal.py</code> para ejecutar contramedidas binarias:
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded mr-3 text-xs">CRITICAL</span>
+                            <div>
+                                <p class="font-bold">Compression Bomb (The Crusher)</p>
+                                <p class="text-sm text-gray-600">Aprovecha la descompresión del protocolo SMB 3.1.1 para saturar la RAM del atacante.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded mr-3 text-xs">PERSISTENT</span>
+                            <div>
+                                <p class="font-bold">Infinite Share Maze</p>
+                                <p class="text-sm text-gray-600">Generación recursiva de rutas falsas para atrapar scripts de enumeración.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
 
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-4 bg-black text-white px-4 py-2 inline-block">03. MÉTRICAS DE IMPACTO Y FORENSE</h2>
-            <div class="code-block text-sm">
-                [+] ATTACK INITIALIZED: 2026-02-24 19:30:00<br>
-                Origin Country: Ukraine<br>
-                Scanner Signature: SMB/Windows Exploit Scanner<br>
-                Persistence: Hit #42<br><br>
-                [-] ATTACK CONCLUDED: 2026-02-24 20:45:00<br>
-                └─ Persistence Duration: 4500.2s<br>
-                └─ Data Absorbed: 154.2MB<br>
-                └─ Mitigation Method: Infinite Data Stream
+                <section>
+                    <h2 class="text-3xl section-header uppercase">03. Trampas de Inteligencia Artificial</h2>
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        Protección activa contra bots de robo de modelos y secuestro de inferencia local.
+                    </p>
+                    <div class="code-block text-xs">
+                        [LISTENER] Port 11434 (Ollama) -> Serving Fake Llama3 Weights (Stream)...<br>
+                        [LISTENER] Port 8188 (ComfyUI) -> Injecting WASM CPU Exhauster...<br>
+                        [LISTENER] Port 1234 (LM Studio) -> Connection Locked via Zero-Window.
+                    </div>
+                </section>
+
             </div>
-        </section>
 
-        <footer class="mt-12 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
-            PROYECTO HELL &copy; 2026 - Ulises Guzman & Gemini CLI - GOLD RELEASE
+            <!-- Sidebar / Telemetry -->
+            <div class="space-y-8">
+                <div class="bg-black text-white p-8 rounded-xl shadow-xl">
+                    <h3 class="text-xl font-black mb-4 italic uppercase">Métricas de Ataque</h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="flex justify-between border-b border-gray-800 pb-2">
+                            <span>Puertos Activos:</span>
+                            <span class="text-red-500 font-mono">142+</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800 pb-2">
+                            <span>Modo Defensa:</span>
+                            <span class="text-red-500 font-mono text-right">SATURATION_GOLD</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Respuesta SMB:</span>
+                            <span class="text-red-500 font-mono">LETHAL_BOMB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-red-600 text-white p-8 rounded-xl shadow-xl">
+                    <h3 class="text-xl font-black mb-4 italic uppercase">Banners Activos</h3>
+                    <p class="text-xs font-bold opacity-80 mb-4">IDENTIDAD MEXICANA</p>
+                    <ul class="text-xs space-y-2 font-mono">
+                        <li>- BANXICO (SSH)</li>
+                        <li>- PEMEX (FTP)</li>
+                        <li>- HACIENDA (SMTP)</li>
+                        <li>- BIMBO (MySQL)</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="mt-20 pt-8 border-t-2 border-black flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-widest">
+            <div>PROYECTO HELL &copy; 2026</div>
+            <div>Ulises Guzman & Gemini CLI</div>
+            <div>Build: 4.0.0-GOLD-MEX</div>
         </footer>
     </div>
 </body>

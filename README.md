@@ -1,46 +1,42 @@
 # HELL: Honeypot Exploitation & Lethal Logging
-## Active Defense Infrastructure and Autonomous Threat Mitigation
+## Enterprise Deception Infrastructure & Autonomous Counter-Offensive System
 
-HELL is a high-aggression active defense system designed to neutralize adversarial activity through protocol manipulation, resource exhaustion, and forensic intelligence gathering.
+HELL v4.0.0 is an aggressive active defense ecosystem designed to simulate high-value corporate infrastructure, specifically targeting state-sponsored actors, ransomware operators, and automated AI-theft bots.
 
-### Final Gold Specifications (v2.9.1)
+### Core Architecture: Enterprise Deception (v4.0.0-Gold)
 
-- **Layer 4 Defense (Transport):**
-    - **TCP Zero-Window Tarpit:** Freezes the attacker's TCP stack by exhausting receiving buffers.
-    - **Kernel-Level Spoofing:** Manipulates TCP Keep-Alive probes to prevent connection termination.
-- **Layer 7 Defense (Application):**
-    - **CPU Exhauster (WASM/JS):** Injects WebWorkers into browser-based scanners to consume 100% CPU on all available cores.
-    - **Infinite Redirect Loops:** Traps web bots in recursive HTTP 302 labyrinths.
-    - **Sticky Headers:** Delivers massive amounts of redundant HTTP metadata to overflow automated parsers.
-- **Counter-Measures:**
-    - **Gzip Decompression Bomb:** High-ratio compressed payloads (10GB+ expanded).
-    - **Infinite Data Streams:** High-velocity random binary injection to saturate inbound bandwidth.
-- **Intelligence & Forensics:**
-    - **Real-time Geolocation:** Automatic origin country identification.
-    - **Professional Logging:** Detailed metrics on duration, data injected, and scanner signatures (Nmap, Masscan, ZGrab, etc.).
-    - **IsMalicious & VirusTotal Sync:** Synchronized threat reporting with community intelligence APIs.
+- **Active Directory Simulation (MEX-AD-CORP):**
+    - **Identity Decoy:** Full emulation of a Mexican Domain Controller (Ports 53, 88, 135, 389, 636, 3268, 5985).
+    - **Protocol Fuzzing:** Real-time binary garbage injection into LDAP and Kerberos parsers to destabilize offensive tools like BloodHound or Impacket.
+    - **Honey-SYSVOL:** Virtual file tree containing toxic .xml and .ini files with embedded beacons.
 
-### Deployment Protocol
+- **SMB Lethal Submodule (Port 445):**
+    - **Compression Bomb:** Exploits SMB 3.1.1 compression headers to force Out-Of-Memory (OOM) crashes on the attacker's system.
+    - **Infinite Share Maze:** Recursive generation of attractive directory structures to trap automated crawlers.
+    - **NTLM Blackhole:** Captures authentication attempts and kidnaps execution threads via ultra-low-velocity drip-feeding.
 
-1. **Initialization:**
-   ```bash
-   git clone https://github.com/uls0/Active-Defense-Hell.git
-   cd Active-Defense-Hell
-   ```
+- **AI & LLM Protection Suite:**
+    - **Model Thief Traps:** Specialized decoys for Ollama (11434), ComfyUI (8188), and LM Studio (1234).
+    - **Fake Weight Streams:** Simulates massive model downloads while inyecting entropy-heavy data to saturate attacker storage and processing power.
 
-2. **Payload Generation:**
-   ```bash
-   python3 scripts/generate_bomb.py
-   ```
+- **Modern Vulnerability Emulation:**
+    - **Edge Gateway Decoys:** Simulated Fortinet FortiOS (10443) and Roundcube Webmail interfaces to intercept botnets targeting 2026-critical CVEs.
 
-3. **Execution:**
-   ```bash
-   docker-compose up -d --build
-   ```
+- **Network Engineering & Persistence:**
+    - **Port-Hopping Killswitch:** Detects sequential scanning patterns and neutralizes the scanner with malformed TCP segments.
+    - **TCP Zero-Window Tarpit:** Freezes the attacker's network stack at Layer 4.
+    - **Sticky Headers & Clamped Delivery:** Overloads parsers and fragments payloads into 2-byte segments.
+
+### Operational Logs & Forensics
+
+HELL provides professional-grade telemetry for every neutralized threat:
+- **Origin Country Identification:** Automatic geolocation of adversarial IPs.
+- **Scanner Signature Detection:** Identification of Nmap, ZGrab, Masscan, and custom botnets.
+- **Impact Metrics:** Precise tracking of persistence duration and total data injected into the attacker's system.
 
 ### Security Disclaimer
-This system is strictly for defensive research. Operation should comply with local legal frameworks. The developer assumes no liability for misuse.
+This system is strictly for defensive research and infrastructure protection. Deployment should adhere to local legal frameworks and corporate security policies.
 
 ---
 **Developed by Ulises Guzman & Gemini CLI**
-**Version 2.9.1-Gold**
+**Version 4.0.0-GOLD**

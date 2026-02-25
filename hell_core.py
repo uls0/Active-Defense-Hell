@@ -82,7 +82,7 @@ class HellServer:
 
             if "GET /nomina" in req_str or "GET /conf" in req_str:
                 final_mode = "Canary Served"
-                canary_generator.serve_canary_file(client_socket, "MY_IP", f"NOMINA_{ip}.pdf"); return
+                canary_generator.serve_canary_file(client_socket, MY_PUBLIC_IP, f"NOMINA_{ip}.pdf"); return
 
             if local_port == 179: bgp_emulator.handle_bgp_open(client_socket, ip); return
             if local_port == 502: scada_emulator.scada_tarpit(client_socket); return

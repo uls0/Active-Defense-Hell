@@ -10,7 +10,6 @@ def get_stats():
     try:
         with open(LOG_FILE, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-            # Ajuste de regex para el formato v10.5.0
             total_data = sum(float(d) for d in re.findall(r"Data: ([\d.]+)MB", content))
             total_time = sum(float(t) for t in re.findall(r"Held: ([\d.]+)s", content))
             total_hits = len(re.findall(r"TRIGGERED:", content))
@@ -18,8 +17,8 @@ def get_stats():
     except: return 0, 0, 0
 
 def tail_f():
-    print("\033[1;91m" + "💀 HELL MONITOR v3.0 - THE SINGULARITY" + "\033[0m")
-    print("\033[90m" + "Designed by ULSO+GCLI | Real-Time Combat Intelligence" + "\033[0m")
+    print("\033[1;91m" + "💀 HELL MONITOR v3.1 - THE SINGULARITY (STABLE)" + "\033[0m")
+    print("\033[90m" + "Designed by ULSO+GCLI | Global Intel & Canary Tracking" + "\033[0m")
     print("-" * 65)
     
     if not os.path.exists(LOG_FILE): open(LOG_FILE, 'a').close()
@@ -30,20 +29,20 @@ def tail_f():
             line = f.readline()
             if not line:
                 data, secs, hits = get_stats()
-                # Status bar con GB convertidos
                 sys.stdout.write(f"\r[STATUS] Sec: {round(secs/3600, 2)}h | Data: {round(data/1024, 2)}GB | Hits: {hits}   ")
                 sys.stdout.flush()
                 time.sleep(1)
                 continue
             
-            # Formateo visual de alertas
             if "TRIGGERED" in line:
                 print("\n\033[1;91m" + "!" * 65 + "\033[0m")
                 print(f"\033[1;91m{line.strip()}\033[0m")
+            elif "MESH-BLOCK" in line:
+                print(f"\033[1;96m{line.strip()}\033[0m")
             elif "NEUTRALIZED" in line:
                 print(f"\033[1;94m{line.strip()}\033[0m")
                 print("\033[90m" + "-" * 65 + "\033[0m")
-            elif "IP:" in line or "Actor:" in line:
+            elif "IP:" in line or "Actor:" in line or "Origin:" in line:
                 print(f"\033[97m{line.strip()}\033[0m")
             elif "MALWARE" in line or "CANARY" in line:
                 print(f"\033[1;93m[⚠️ ALERT] {line.strip()}\033[0m")

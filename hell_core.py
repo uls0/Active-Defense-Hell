@@ -11,9 +11,9 @@ import zlib
 import signal
 import sys
 from datetime import datetime
-from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, mesh_node
+from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, mesh_node, predictive_ai
 
-# CONFIGURACIÓN HELL v8.3.1: DISTRIBUTED MESH INTEGRATION
+# CONFIGURACIÓN HELL v8.5.0: PREDICTIVE DEFENSE ENGINE
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [22, 2222, 3389, 4455]
@@ -21,7 +21,6 @@ SCADA_PORTS = [502]
 PORTS = WEB_PORTS + LETHAL_PORTS + SCADA_PORTS
 LOG_FILE = "logs/hell_activity.log"
 
-# Configuración de Red Mesh (Añadir IPs de otros servidores HELL aquí)
 MESH_PEERS = os.getenv("HELL_MESH_PEERS", "").split(",") 
 NODE_ID = os.getenv("HELL_NODE_ID", "NODE-SFO-01")
 
@@ -34,14 +33,34 @@ class HellServer:
         self.whitelist = {MY_IP, "127.0.0.1"}
         self.stats = {} 
         
-        # Inicializar Nodo Mesh
-        peers = [p.strip() for p in MESH_PEERS if p.strip()]
-        self.mesh = mesh_node.start_mesh_service(NODE_ID, peers)
+        # Inicializar Componentes de Inteligencia
+        self.mesh = mesh_node.start_mesh_service(NODE_ID, [p.strip() for p in MESH_PEERS if p.strip()])
+        self.ai = predictive_ai.HellPredictiveAI()
         
-        print(f"HELL CORE v8.3.1: Mesh Network Initialized (Node: {NODE_ID}).")
+        print(f"HELL CORE v8.5.0: Predictive AI Modeling Active. Analyzing sequences.")
+
+    def log_engagement(self, ip, port, mesh_pre_flag=False, prediction_data=None):
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        rdns, loc, asn, isp, profile = self.get_full_intel(ip)
+        
+        if ip not in self.stats: self.stats[ip] = {'hits': 1, 'total_time': 0, 'total_data': 0}
+        else: self.stats[ip]['hits'] += 1
+
+        prefix = "[📡 MESH-BLOCK]" if mesh_pre_flag else "[+] ULTIMATE DECEPTION"
+        ai_tag = f" [🧠 PREDICTED NEXT: {prediction_data[0]} ({round(prediction_data[1], 1)}%)]" if prediction_data and prediction_data[0] else ""
+        
+        report = (
+            f"\n{prefix} TRIGGERED: {timestamp}{ai_tag}\n"
+            f"----------------------------------------\n"
+            f"IP: {ip} ({rdns})\n"
+            f"Origin: {loc} | Profile: {profile}\n"
+            f"Network: {isp} ({asn})\n"
+            f"Target Port: {port} | Hit Count: {self.stats[ip]['hits']}\n"
+            f"----------------------------------------\n"
+        )
+        with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
 
     def get_full_intel(self, ip):
-        """Obtiene información forense profunda de la IP"""
         try:
             try: rdns = socket.gethostbyaddr(ip)[0]
             except: rdns = ip
@@ -51,62 +70,20 @@ class HellServer:
             isp = r.get('isp', 'Unknown ISP')
             profile = "PROXY/VPN" if r.get('proxy') else "DATACENTER/BOT"
             return rdns, loc, asn, isp, profile
-        except:
-            return ip, "Unknown", "Unknown", "Unknown", "Unknown"
-
-    def log_engagement(self, ip, port, mesh_pre_flag=False):
-        """Log de inicio con formato ULTIMATE"""
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        rdns, loc, asn, isp, profile = self.get_full_intel(ip)
-        
-        if ip not in self.stats: self.stats[ip] = {'hits': 1, 'total_time': 0, 'total_data': 0}
-        else: self.stats[ip]['hits'] += 1
-
-        prefix = "[📡 MESH-BLOCK]" if mesh_pre_flag else "[+] ULTIMATE DECEPTION"
-        report = (
-            f"\n{prefix} TRIGGERED: {timestamp}\n"
-            f"----------------------------------------\n"
-            f"IP: {ip} ({rdns})\n"
-            f"Origin: {loc} | Profile: {profile}\n"
-            f"Network: {isp} ({asn})\n"
-            f"Target Port: {port} | Hit Count: {self.stats[ip]['hits']}\n"
-            f"Classification: Generic Infrastructure Bot | Score: {random.randint(0,10)}\n"
-            f"----------------------------------------\n"
-        )
-        with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
-
-    def log_neutralization(self, ip, duration, bytes_sent, mode):
-        """Log de cierre con formato ULTIMATE y Daño Total"""
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        mb_sent = round(bytes_sent / (1024 * 1024), 4)
-        
-        if ip in self.stats:
-            self.stats[ip]['total_time'] += duration
-            self.stats[ip]['total_data'] += mb_sent
-        
-        report = (
-            f"[-] THREAT NEUTRALIZED: {timestamp}\n"
-            f"    └─ Current Retention: {round(duration, 2)}s | Current Data: {mb_sent}MB\n"
-            f"    └─ TOTAL DAMAGE: Time Lost: {round(self.stats[ip]['total_time'], 2)}s | Data Injected: {round(self.stats[ip]['total_data'], 2)}MB\n"
-            f"    └─ Final Mitigation: {mode}\n"
-            f"----------------------------------------\n"
-        )
-        with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
-
-        # SI EL ATAQUE FUE SIGNIFICATIVO, ANUNCIAR AL MESH
-        if duration > 120 or mb_sent > 5:
-            self.mesh.broadcast_threat(ip, "CRITICAL", mode)
+        except: return ip, "Unknown", "Unknown", "Unknown", "Unknown"
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
         if ip in self.whitelist:
             client_socket.close(); return
 
-        # --- REVISAR INMUNIDAD COMPARTIDA (MESH) ---
-        is_blacklisted, mesh_data = self.mesh.check_reputation(ip)
+        # --- PREDICTIVE AI: ANALIZAR SECUENCIA ---
+        predicted_port, confidence = self.ai.analyze_sequence(ip, local_port)
+
+        # --- MESH INMUNITY CHECK ---
+        is_blacklisted, _ = self.mesh.check_reputation(ip)
         if is_blacklisted:
             self.log_engagement(ip, local_port, mesh_pre_flag=True)
-            # Si ya es conocido, lanzamos destrucción inmediata
             if local_port in [22, 2222]: shell_emulator.terminal_crusher(client_socket)
             else: zip_generator.serve_zip_trap(client_socket)
             return
@@ -115,16 +92,14 @@ class HellServer:
         final_mode = "Mitigation"
         total_bytes = 0
 
-        threading.Thread(target=self.log_engagement, args=(ip, local_port)).start()
+        # Log con Predicción AI
+        threading.Thread(target=self.log_engagement, args=(ip, local_port, False, (predicted_port, confidence))).start()
 
         try:
             client_socket.settimeout(10.0)
-            try:
-                data = client_socket.recv(4096)
-                req_str = data.decode('utf-8', errors='ignore')
-            except: req_str = ""
+            data = client_socket.recv(4096)
+            req_str = data.decode('utf-8', errors='ignore')
 
-            # --- LÓGICA DE CONTRA-ATAQUE ---
             if "/owa" in req_str or ".zip" in req_str or "GET / " in req_str:
                 final_mode = "Fifield Ultra-Dense Attack"
                 zip_generator.serve_zip_trap(client_socket)
@@ -158,6 +133,23 @@ class HellServer:
             try: client_socket.close()
             except: pass
 
+    def log_neutralization(self, ip, duration, bytes_sent, mode):
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        mb_sent = round(bytes_sent / (1024 * 1024), 4)
+        if ip in self.stats:
+            self.stats[ip]['total_time'] += duration
+            self.stats[ip]['total_data'] += mb_sent
+        report = (
+            f"[-] THREAT NEUTRALIZED: {timestamp}\n"
+            f"    └─ Current Retention: {round(duration, 2)}s | Current Data: {mb_sent}MB\n"
+            f"    └─ TOTAL DAMAGE: Time Lost: {round(self.stats[ip]['total_time'], 2)}s | Data Injected: {round(self.stats[ip]['total_data'], 2)}MB\n"
+            f"    └─ Final Mitigation: {mode}\n"
+            f"----------------------------------------\n"
+        )
+        with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
+        if duration > 120 or mb_sent > 5:
+            self.mesh.broadcast_threat(ip, "CRITICAL", mode)
+
     def start_listener(self, port):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -173,13 +165,10 @@ class HellServer:
         signal.signal(signal.SIGINT, lambda s, f: sys.exit(0))
         try: network_mangler.apply_mss_clamping(PORTS)
         except: pass
-        
         threading.Thread(target=icmp_tarpit.start_icmp_tarpit, args=(self.whitelist,), daemon=True).start()
-        
         for port in PORTS:
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
-        
-        print(f"[✅] HELL CORE v8.3.1 (MESH-ENABLE) desplegado en {len(PORTS)} puertos.")
+        print(f"[✅] HELL CORE v8.5.0 (AI-POWERED) desplegado.")
         while True:
             try: time.sleep(1)
             except KeyboardInterrupt: break

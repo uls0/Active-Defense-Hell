@@ -4,40 +4,37 @@ services:
   hell_app:
     build: .
     container_name: hell_core
-    ports:
-      - "8080:8080"
-      - "25:2525"
-      - "3306:3306"
-      - "22:2222"
-      - "3389:3389"
-      - "6379:6379"
-      - "445:4455"
-      - "1337:1337"
-      - "8081:8081"
-      - "8082:8082"
-      - "2375:2375"
-      - "8090:8090"
-      - "8125:8125"
-      - "8443:8443"
-    environment:
-      - USE_AI=${USE_AI:-false}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - VT_API_KEY=${VT_API_KEY}
-      - MY_IP=${MY_IP}
-    volumes:
-      - ./payloads:/app/payloads
-      - ./logs:/app/logs
-      - ./assets:/app/assets
     restart: always
+    network_mode: "host" # Usamos modo host para mayor realismo y soporte de ICMP Tarpit
+    environment:
+      - MY_IP=${MY_IP:-127.0.0.1}
+      - HELL_MESH_PEERS=${HELL_MESH_PEERS:-}
+      - HELL_NODE_ID=NODE-SFO-01
+    volumes:
+      - ./logs:/app/logs
+      - ./scripts:/app/scripts
+      - ./templates:/app/templates
+    cap_add:
+      - NET_ADMIN # Necesario para MSS Clamping e Iptables
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   hell_db:
     image: mysql:8.0
-    container_name: hell_db
+    container_name: hell_db_backend
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hell_secret_pass}
-      - MYSQL_DATABASE=hell_honeypot
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_hell_2026}
     volumes:
-      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
-    ports:
-      - "3307:3306"
-    restart: always
+      - hell_data:/var/lib/mysql
+    networks:
+      - hell_net
+
+networks:
+  hell_net:
+    driver: bridge
+
+volumes:
+  hell_data:

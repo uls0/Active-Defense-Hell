@@ -13,6 +13,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./scripts:/app/scripts
+      - ./hell_core.py:/app/hell_core.py
     cap_add:
       - NET_ADMIN
       - NET_RAW

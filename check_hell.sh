@@ -7,7 +7,8 @@ echo "[*] Container Status:"
 docker ps --format "table {{.Names}}\t{{.Status}}" | grep hell
 
 echo -e "\n[*] Network Deception Listeners:"
-for port in 22 80 443 445 88 179 389 502 1433 2222 3306 3389 4455 8080 8443 8888; do
+# Puertos base
+for port in 22 80 443 445 88 179 389 502 1433 2222 3306 3389 4455 8080 8443 8888 33001 1338; do
     ss -tuln | grep ":$port " > /dev/null
     if [ $? -eq 0 ]; then
         echo -e "  [✅] Port $port: ACTIVE"
@@ -15,6 +16,14 @@ for port in 22 80 443 445 88 179 389 502 1433 2222 3306 3389 4455 8080 8443 8888
         echo -e "  [❌] Port $port: CLOSED"
     fi
 done
+
+# Resumen del rango Tarpit
+ACTIVE_TARPIT=$(ss -tuln | grep -E ":20[0-9]{3}" | wc -l)
+if [ $ACTIVE_TARPIT -gt 0 ]; then
+    echo -e "  [✅] Port Range 20000-20100: ACTIVE ($ACTIVE_TARPIT ports)"
+else
+    echo -e "  [❌] Port Range 20000-20100: CLOSED"
+fi
 
 echo -e "\n[*] Forensic Pulse (Last 10 lines):"
 [ -f logs/hell_activity.log ] && tail -n 10 logs/hell_activity.log || echo "  [!] Log file not found."

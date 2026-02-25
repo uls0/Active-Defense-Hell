@@ -7,12 +7,14 @@ import json
 import random
 import requests
 import signal
-from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator
+from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit
 
-VERSION = "v9.1.1-FINAL-ARMED"
+VERSION = "v10.6.2-SINGULARITY-ELITE"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
-PORTS = [22, 80, 443, 445, 88, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200]
+# Puertos base + Rango Tarpit 20000-20100
+PORTS = [22, 80, 443, 445, 88, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200, 33001, 1338]
+PORTS.extend(range(20000, 20101))
 
 MY_PUBLIC_IP = os.getenv("MY_IP", "127.0.0.1")
 VT_KEY = os.getenv("VT_API_KEY", "")
@@ -87,6 +89,11 @@ class HellServer:
                 final_mode = "AD-Maze"
                 return
 
+            if 20000 <= local_port <= 20100:
+                advanced_tarpit.handle_advanced_tarpit(client_socket, ip, local_port)
+                final_mode = "Improved-Tarpit"
+                return
+
             while True:
                 client_socket.send(b"\x00")
                 total_bytes += 1024; time.sleep(30)
@@ -121,7 +128,9 @@ class HellServer:
         except: pass
 
     def start(self):
-        for port in PORTS: threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
+        for port in PORTS: 
+            threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
+            time.sleep(0.01) # Pequeño delay para estabilizar el kernel
         print(f"[🚀] {VERSION} Deployment Complete.")
         while True:
             try: time.sleep(1)

@@ -1,34 +1,17 @@
-# HELL: Honeypot Exploitation & Lethal Logging
-## Ultimate Active Defense & Intelligence Infrastructure
+# HELL v10.6.5-SINGULARITY-ELITE
+## Active Defense & Cognitive Deception Infrastructure
 
-HELL v5.0.0 is the definitive version of the autonomous counter-offensive system. It combines deep protocol deception with a permanent intelligence engine that tracks and accumulates damage against adversarial actors.
+HELL is an autonomous defensive system designed to engage, profile, and neutralize adversaries through advanced deception techniques and resource exhaustion.
 
-### Ultimate Specifications (v5.0.0-Gold)
+### New Features in v10.6-SINGULARITY:
+- **4.5 PB High-Density Fifield Bomb:** Uses overlapping ZIP structures to deliver a 368 Mb payload that expands to 4.5 Petabytes upon analysis.
+- **Improved Tarpit (Greasy Mode):** Implements Window Obfuscation and Zero-Window-Stall techniques to trap bots in persistent connections.
+- **Dynamic Port Range:** Monitoring 100+ ports (20000-20100) with aggressive tarpitting.
+- **Enterprise Protocol Emulation:** Now supports IBM Aspera (33001) and MediaShuttle/Signiant monitoring.
+- **Cognitive Shell:** Enhanced Cowrie-style emulation with command retention (3-5 commands) before payload injection.
 
-- **Permanent Threat Tracking:**
-    - **Damage Accumulator:** Persistent tracking of every IP address. Logs show the *Total Life Loss* (time wasted) and *Total Garbage Injected* across all sessions.
-    - **Bot Classification:** Real-time identification of threat types (AI Thief, AD Crawler, Ransomware Bot, etc.).
-- **Deep Forensics & Fingerprinting:**
-    - **ISP & ASN Mapping:** Automatic identification of the attacker's network provider and infrastructure type (DataCenter, VPN, Proxy, or Residential).
-    - **Reverse DNS Lookup:** Resolves hostnames to uncover hidden infrastructure.
-- **Advanced Anchoring (The Sticky Trap):**
-    - **Drip-Feed delivery:** Data is served byte-by-byte with randomized delays to keep bot timeouts from triggering.
-    - **Heartbeat Keep-Alive:** Injects invisible traffic to maintain connection persistence for hours.
-- **Enterprise Deception Suite:**
-    - **MEX-AD-CORP:** Full simulation of a Mexican Active Directory environment.
-    - **Lethal SMB Submodule:** Compression bombs and infinite share mazes.
-    - **AI Protection:** Zlib bombs for Ollama, ComfyUI, and LM Studio.
+### Active Ports:
+- SSH (22), HTTP/S (80/443), SMB (445), SQL (1433/3306), Aspera (33001), SFTP (1338), and Tarpit Range (20000-20100).
 
-### Operational Metrics
-
-The system now logs:
-1. **Connection Profile:** Detects if the attacker is hiding behind a Proxy or attacking from a professional Hosting service.
-2. **Persistence Duration:** Real-time and cumulative time the attacker has been trapped.
-3. **Data Impact:** Volume of null-data and logic bombs successfully processed by the attacker.
-
-### Security Disclaimer
-This system is strictly for defensive research. Operation should comply with local legal frameworks.
-
----
-**Designed by ULSO+GCLI**
-**Version 5.0.0-ULTIMATE**
+### Deployment:
+Operates in Host Mode for Kernel-level network control and raw socket manipulation.

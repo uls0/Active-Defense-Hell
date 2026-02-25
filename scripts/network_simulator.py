@@ -20,14 +20,9 @@ MFA Required. Please enter 6-digit Mobile Token: """
         client_socket.send(msg.encode())
         
         # El atacante escribirá algo, pero nunca será correcto
-        client_socket.recv(1024)
-        time.sleep(2)
-        client_socket.send(b"
-[!] MFA Token Timeout. Retrying authentication loop...
-")
+        client_socket.send(b"\n[!] MFA Token Timeout. Retrying authentication loop...\n")
         
         while True:
-            client_socket.send(b"Waiting for MFA push notification approval...
-")
+            client_socket.send(b"Waiting for MFA push notification approval...\n")
             time.sleep(60)
     except: pass

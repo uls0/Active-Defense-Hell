@@ -13,7 +13,7 @@ import sys
 from datetime import datetime
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, mesh_node, predictive_ai
 
-# CONFIGURACIÓN HELL v8.5.0: PREDICTIVE DEFENSE ENGINE
+# CONFIGURACIÓN HELL v8.5.1: JA3 GLOBAL MESH REPUTATION
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [22, 2222, 3389, 4455]
@@ -32,14 +32,11 @@ class HellServer:
         os.makedirs("logs/abuse_reports", exist_ok=True)
         self.whitelist = {MY_IP, "127.0.0.1"}
         self.stats = {} 
-        
-        # Inicializar Componentes de Inteligencia
         self.mesh = mesh_node.start_mesh_service(NODE_ID, [p.strip() for p in MESH_PEERS if p.strip()])
         self.ai = predictive_ai.HellPredictiveAI()
-        
-        print(f"HELL CORE v8.5.0: Predictive AI Modeling Active. Analyzing sequences.")
+        print(f"HELL CORE v8.5.1: JA3 Global Blacklisting Ready.")
 
-    def log_engagement(self, ip, port, mesh_pre_flag=False, prediction_data=None):
+    def log_engagement(self, ip, port, mesh_pre_flag=False, prediction_data=None, ja3=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         rdns, loc, asn, isp, profile = self.get_full_intel(ip)
         
@@ -47,10 +44,11 @@ class HellServer:
         else: self.stats[ip]['hits'] += 1
 
         prefix = "[📡 MESH-BLOCK]" if mesh_pre_flag else "[+] ULTIMATE DECEPTION"
-        ai_tag = f" [🧠 PREDICTED NEXT: {prediction_data[0]} ({round(prediction_data[1], 1)}%)]" if prediction_data and prediction_data[0] else ""
+        ai_tag = f" [🧠 PREDICTED: {prediction_data[0]}]" if prediction_data and prediction_data[0] else ""
+        ja3_tag = f" [🛡️ JA3: {ja3}]" if ja3 else ""
         
         report = (
-            f"\n{prefix} TRIGGERED: {timestamp}{ai_tag}\n"
+            f"\n{prefix} TRIGGERED: {timestamp}{ai_tag}{ja3_tag}\n"
             f"----------------------------------------\n"
             f"IP: {ip} ({rdns})\n"
             f"Origin: {loc} | Profile: {profile}\n"
@@ -77,23 +75,31 @@ class HellServer:
         if ip in self.whitelist:
             client_socket.close(); return
 
-        # --- PREDICTIVE AI: ANALIZAR SECUENCIA ---
-        predicted_port, confidence = self.ai.analyze_sequence(ip, local_port)
+        ja3_hash = None
+        # --- TLS FINGERPRINTING (JA3) ---
+        if local_port in [443, 8443]:
+            try:
+                peek_data = client_socket.recv(1024, socket.MSG_PEEK)
+                ja3_hash = ja3_engine.get_ja3_hash(peek_data)
+            except: pass
 
-        # --- MESH INMUNITY CHECK ---
-        is_blacklisted, _ = self.mesh.check_reputation(ip)
-        if is_blacklisted:
-            self.log_engagement(ip, local_port, mesh_pre_flag=True)
+        # --- MESH REPUTATION CHECK (IP + JA3) ---
+        is_known, reason = self.mesh.check_reputation(ip, ja3_hash)
+        if is_known:
+            self.log_engagement(ip, local_port, mesh_pre_flag=True, ja3=ja3_hash)
+            # Destrucción Inmediata si es conocido por el Mesh
             if local_port in [22, 2222]: shell_emulator.terminal_crusher(client_socket)
             else: zip_generator.serve_zip_trap(client_socket)
             return
+
+        # AI Sequence Analysis
+        predicted_port, confidence = self.ai.analyze_sequence(ip, local_port)
 
         start_time = time.time()
         final_mode = "Mitigation"
         total_bytes = 0
 
-        # Log con Predicción AI
-        threading.Thread(target=self.log_engagement, args=(ip, local_port, False, (predicted_port, confidence))).start()
+        threading.Thread(target=self.log_engagement, args=(ip, local_port, False, (predicted_port, confidence), ja3_hash)).start()
 
         try:
             client_socket.settimeout(10.0)
@@ -120,7 +126,6 @@ class HellServer:
                 scada_emulator.scada_tarpit(client_socket)
                 return
 
-            # Tarpit Infinito
             while True:
                 client_socket.send(b"\x00")
                 total_bytes += 1
@@ -129,16 +134,17 @@ class HellServer:
         except: pass
         finally:
             duration = time.time() - start_time
-            self.log_neutralization(ip, duration, total_bytes, final_mode)
+            self.log_neutralization(ip, duration, total_bytes, final_mode, ja3_hash)
             try: client_socket.close()
             except: pass
 
-    def log_neutralization(self, ip, duration, bytes_sent, mode):
+    def log_neutralization(self, ip, duration, bytes_sent, mode, ja3=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         mb_sent = round(bytes_sent / (1024 * 1024), 4)
         if ip in self.stats:
             self.stats[ip]['total_time'] += duration
             self.stats[ip]['total_data'] += mb_sent
+        
         report = (
             f"[-] THREAT NEUTRALIZED: {timestamp}\n"
             f"    └─ Current Retention: {round(duration, 2)}s | Current Data: {mb_sent}MB\n"
@@ -147,8 +153,12 @@ class HellServer:
             f"----------------------------------------\n"
         )
         with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
+        
+        # ANUNCIAR IP Y JA3 AL MESH
         if duration > 120 or mb_sent > 5:
-            self.mesh.broadcast_threat(ip, "CRITICAL", mode)
+            self.mesh.broadcast_threat(ip, "CRITICAL", mode, type="IP")
+            if ja3:
+                self.mesh.broadcast_threat(ja3, "CRITICAL", f"Tools used by {ip}", type="JA3")
 
     def start_listener(self, port):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -168,7 +178,7 @@ class HellServer:
         threading.Thread(target=icmp_tarpit.start_icmp_tarpit, args=(self.whitelist,), daemon=True).start()
         for port in PORTS:
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
-        print(f"[✅] HELL CORE v8.5.0 (AI-POWERED) desplegado.")
+        print(f"[✅] HELL CORE v8.5.1 (MESH-INTEL) desplegado.")
         while True:
             try: time.sleep(1)
             except KeyboardInterrupt: break

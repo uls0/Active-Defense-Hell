@@ -2,10 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Instalar dependencias del sistema y herramientas de red
 RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
     iproute2 \
+    iptables \
+    net-tools \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .

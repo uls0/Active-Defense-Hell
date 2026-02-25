@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELL Dashboard | Tactical Ops</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'JetBrains Mono', monospace; }
+        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .text-neon { color: #58a6ff; text-shadow: 0 0 10px #58a6ff; }
+        .stat-value { font-size: 2.5rem; font-weight: bold; }
+    </style>
+</head>
+<body class="p-8">
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-red-500 uppercase tracking-widest">💀 Proyecto HELL v8.4.0</h1>
+            <p class="text-gray-500">Designed by ULSO+GCLI | Distributed Defense Intelligence Node</p>
+        </div>
+        <div class="card bg-red-900 border-red-500 animate-pulse">
+            <span class="text-white font-bold uppercase tracking-widest">LIVE ATTACK MONITORING ACTIVE</span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="card">
+            <h3 class="text-gray-400 uppercase text-xs font-bold mb-2">Daño Total Inyectado (GB)</h3>
+            <div id="total_data" class="stat-value text-neon">0.0</div>
+            <p class="text-xs mt-2 text-gray-500">Resource Exhaustion on Attacker Local Resources</p>
+        </div>
+        <div class="card">
+            <h3 class="text-gray-400 uppercase text-xs font-bold mb-2">Tiempo Retenido (Horas)</h3>
+            <div id="total_time" class="stat-value text-red-400">0.0</div>
+            <p class="text-xs mt-2 text-gray-500">Cumulative Time Secured from Botnets</p>
+        </div>
+        <div class="card">
+            <h3 class="text-gray-400 uppercase text-xs font-bold mb-2">Nodos Mesh Activos</h3>
+            <div id="mesh_nodes" class="stat-value text-green-400">1</div>
+            <p class="text-xs mt-2 text-gray-500">Inmunity Synchronization Ready</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card">
+            <h3 class="text-gray-400 uppercase font-bold mb-4">Top 10 Puertos Atacados</h3>
+            <canvas id="portsChart" width="400" height="200"></canvas>
+        </div>
+        <div class="card">
+            <h3 class="text-gray-400 uppercase font-bold mb-4">Orígenes Geográficos (Top Countries)</h3>
+            <div id="countries_list" class="space-y-4">
+                <p class="text-gray-500 italic">Analizando el origen de los bots...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function updateStats() {
+            const response = await fetch('/api/stats');
+            const data = await response.json();
+            
+            document.getElementById('total_data').innerText = (data.total_data / 1024).toFixed(2);
+            document.getElementById('total_time').innerText = (data.total_time / 3600).toFixed(2);
+            
+            // Actualizar lista de países
+            const countriesList = document.getElementById('countries_list');
+            countriesList.innerHTML = Object.entries(data.countries)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([name, count]) => `
+                    <div class="flex justify-between items-center">
+                        <span class="text-white">${name}</span>
+                        <span class="bg-blue-900 text-blue-200 px-2 py-1 rounded text-xs font-bold">${count} Attacks</span>
+                    </div>
+                `).join('');
+
+            // Gráfica de Puertos
+            const ctx = document.getElementById('portsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data.ports),
+                    datasets: [{
+                        label: 'Hits por Puerto',
+                        data: Object.values(data.ports),
+                        backgroundColor: '#58a6ff66',
+                        borderColor: '#58a6ff',
+                        borderWidth: 1
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, grid: { color: '#30363d' } }, x: { grid: { color: '#30363d' } } } }
+            });
+        }
+        setInterval(updateStats, 5000);
+        updateStats();
+    </script>
+</body>
+</html>

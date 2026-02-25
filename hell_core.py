@@ -10,7 +10,7 @@ import signal
 import subprocess
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, network_simulator, bgp_emulator
 
-VERSION = "v10.6.0-MASTER-STABLE"
+VERSION = "v10.6.1-SINGULARITY-FINAL"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
 PORTS = [22, 80, 443, 445, 88, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200]
@@ -19,22 +19,13 @@ MY_PUBLIC_IP = os.getenv("MY_IP", "127.0.0.1")
 
 class HellServer:
     def __init__(self):
-        print(f"[*] INITIALIZING {VERSION} | THE INVISIBLE FORTRESS")
+        print(f"[*] INITIALIZING {VERSION}")
         os.makedirs("logs/forensics", exist_ok=True)
         os.makedirs("logs/malware", exist_ok=True)
-        self.stats = {} # {ip: {'hits': X, 'ports': [], 'commands': [], ...}}
+        self.stats = {}
         self.ai = predictive_ai.HellPredictiveAI()
         self.profiler = profiler_engine.HellProfiler()
         threading.Thread(target=self_healing.health_monitor_loop, daemon=True).start()
-
-    def auto_ban(self, ip):
-        """Bloqueo local preventivo para IPs extremadamente agresivas (>100 hits)"""
-        try:
-            subprocess.run(["iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"], check=True)
-            msg = f"\n[🛡️] THE WALL: IP {ip} has been permanently banned at Kernel level.\n"
-            with open(LOG_FILE, "a") as f: f.write(msg)
-            print(msg.strip())
-        except: pass
 
     def get_full_intel(self, ip):
         try:
@@ -44,36 +35,34 @@ class HellServer:
 
     def log_engagement(self, ip, port, ja3=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        if ip not in self.stats:
+            self.stats[ip] = {'hits': 1, 'ports': [port], 'commands': [], 'ja3': ja3, 'total_data': 0, 'total_time': 0}
+        else:
+            self.stats[ip]['hits'] += 1
+            if port not in self.stats[ip]['ports']: self.stats[ip]['ports'].append(port)
+        
+        hit_count = self.stats[ip]['hits']
+        
         def background_log():
             loc, asn, isp = self.get_full_intel(ip)
-            if ip not in self.stats:
-                self.stats[ip] = {'hits': 1, 'ports': [port], 'commands': [], 'ja3': ja3, 'total_data': 0}
-            else:
-                self.stats[ip]['hits'] += 1
-                if port not in self.stats[ip]['ports']: self.stats[ip]['ports'].append(port)
-            
-            # Auto-ban si es un ataque masivo
-            if self.stats[ip]['hits'] == 100: self.auto_ban(ip)
-
             actor, conf = self.profiler.classify_attacker(self.stats[ip]['commands'], ja3, self.stats[ip]['ports'])
-            report = f"\n[+] TRIGGERED: {timestamp}\nIP: {ip} | Actor: {actor}({conf}%)\nOrigin: {loc} | Network: {isp} | Port: {port}\n----------------------------------------\n"
+            report = f"\n[+] TRIGGERED: {timestamp} | IP: {ip} | Actor: {actor}({conf}%) | Hits: {hit_count}\n----------------------------------------\n"
             with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
-            print(f"[🔥] {actor} ENGAGED: {ip} on {port}")
+            print(f"[🔥] {actor} ENGAGED: {ip} (Hit #{hit_count})")
         
         threading.Thread(target=background_log, daemon=True).start()
+        return hit_count
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
         start_time = time.time()
         
-        # JA3 & AI
-        pred_port, _ = self.ai.analyze_sequence(ip, local_port)
         ja3_hash = None
         if local_port in [443, 8443]:
             try: ja3_hash = ja3_engine.get_ja3_hash(client_socket.recv(1024, socket.MSG_PEEK))
             except: pass
 
-        self.log_engagement(ip, local_port, ja3_hash)
+        hit_count = self.log_engagement(ip, local_port, ja3_hash)
         total_bytes = 0
         final_mode = "Mitigation"
 
@@ -82,24 +71,27 @@ class HellServer:
             data = client_socket.recv(8192)
             req_str = data.decode('utf-8', errors='ignore')
 
-            # Malware Triage
+            # --- ROUTING CON BAIT & SWITCH ---
+            if local_port == 22:
+                final_mode = "Bait-Switch-SSH"
+                shell_emulator.handle_cowrie_trap(client_socket, ip, hit_count)
+                return
+
             if "POST" in req_str or "PUT" in req_str or b"\x7fELF" in data:
-                final_mode = "Malware Captured"
+                final_mode = "Malware-Captured"
                 sample = malware_triage.save_sample(data, ip)
                 threading.Thread(target=malware_triage.perform_triage, args=(sample, os.getenv("VT_API_KEY")), daemon=True).start()
                 zip_generator.serve_zip_trap(client_socket); return
 
-            # Canary Gateway
-            if "GET /nomina" in req_str or "GET /conf" in req_str:
-                final_mode = "Canary Served"
-                canary_generator.serve_canary_file(client_socket, MY_PUBLIC_IP, f"NOMINA_{ip}.pdf"); return
-
-            # Service Emulation
-            if local_port in [445, 4455]: total_bytes = smb_lethal.handle_smb_session(client_socket, ip); final_mode = "AD-Maze"
-            elif local_port == 22: shell_emulator.handle_cowrie_trap(client_socket, ip); final_mode = "SSH-Trap"
-            elif local_port == 3306: database_emulator.handle_mysql_trap(client_socket); final_mode = "DB-Bomb"
-            elif local_port == 502: scada_emulator.scada_tarpit(client_socket); final_mode = "SCADA-Tarpit"
-            elif "/owa" in req_str or ".zip" in req_str: zip_generator.serve_zip_trap(client_socket); final_mode = "Fifield-10GB"
+            if local_port in [445, 4455]: 
+                total_bytes = smb_lethal.handle_smb_session(client_socket, ip)
+                final_mode = "AD-Maze"
+            elif local_port == 3306: 
+                database_emulator.handle_mysql_trap(client_socket)
+                final_mode = "MySQL-Bomb"
+            elif "/owa" in req_str or ".zip" in req_str: 
+                zip_generator.serve_zip_trap(client_socket)
+                final_mode = "Fifield-Bomb"
             else:
                 while True:
                     client_socket.send(b"\x00")
@@ -108,6 +100,7 @@ class HellServer:
         finally:
             duration = time.time() - start_time
             if ip in self.stats:
+                self.stats[ip]['total_time'] += duration
                 self.stats[ip]['total_data'] += (total_bytes / (1024*1024))
                 with open(LOG_FILE, "a") as f:
                     f.write(f"[-] NEUTRALIZED: {time.ctime()} | Held: {round(duration,2)}s | Data: {round(total_bytes/(1024*1024),4)}MB | Mode: {final_mode}\n")
@@ -125,7 +118,7 @@ class HellServer:
                 client, addr = server.accept()
                 threading.Thread(target=self.handle_client, args=(client, addr, port), daemon=True).start()
         except Exception as e:
-            print(f"[⚠️] Port {port} unavailable (System Busy/Reserved)")
+            print(f"[⚠️] Port {port} skipped: {e}")
 
     def start(self):
         try:

@@ -6,8 +6,7 @@ import sys
 LOG_FILE = "logs/hell_activity.log"
 
 def get_stats():
-    if not os.path.exists(LOG_FILE):
-        return 0, 0, 0
+    if not os.path.exists(LOG_FILE): return 0, 0, 0
     try:
         with open(LOG_FILE, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
@@ -18,11 +17,11 @@ def get_stats():
     except: return 0, 0, 0
 
 def tail_f():
-    print("\033[91m" + "💀 HELL ULTIMATE MONITOR - LIVE THREAT INTELLIGENCE" + "\033[0m")
-    print("-" * 60)
+    print("\033[91m" + "💀 HELL ULTIMATE MONITOR v2.0 - SINGULARITY STATUS" + "\033[0m")
+    print("\033[90m" + "Designed by ULSO+GCLI | Monitoring Malware & Canaries" + "\033[0m")
+    print("-" * 65)
     
-    if not os.path.exists(LOG_FILE):
-        open(LOG_FILE, 'a').close()
+    if not os.path.exists(LOG_FILE): open(LOG_FILE, 'a').close()
 
     with open(LOG_FILE, 'r', encoding='utf-8', errors='ignore') as f:
         f.seek(0, 2)
@@ -30,24 +29,29 @@ def tail_f():
             line = f.readline()
             if not line:
                 data, secs, hits = get_stats()
-                sys.stdout.write(f"\r[STATUS] Secured: {round(secs/3600, 2)}h | Data: {round(data/1024, 2)}GB | Hits: {hits}   ")
+                sys.stdout.write(f"\r[STATUS] Sec: {round(secs/3600, 2)}h | Data: {round(data/1024, 2)}GB | Hits: {hits} | Triage: \033[92mONLINE\033[0m   ")
                 sys.stdout.flush()
                 time.sleep(1)
                 continue
             
+            # --- FORMATEO DINÁMICO DE ALERTAS ---
             if "TRIGGERED" in line:
-                print("\n\033[93m" + "!" * 60 + "\033[0m")
-                print(f"\033[91m{line.strip()}\033[0m")
-            elif "IP:" in line or "Actor:" in line or "Origin:" in line:
+                print("\n\033[1;91m" + "!" * 65 + "\033[0m")
+                print(f"\033[1;91m{line.strip()}\033[0m")
+            elif "MALWARE CAPTURED" in line or "sample_" in line:
+                print(f"\033[1;93m[☣️ ALERT] {line.strip()}\033[0m")
+            elif "CANARY" in line:
+                print(f"\033[1;95m[🔔 CANARY] {line.strip()}\033[0m")
+            elif "IP:" in line or "Actor:" in line:
                 print(f"\033[97m{line.strip()}\033[0m")
             elif "THREAT NEUTRALIZED" in line:
                 print(f"\033[94m{line.strip()}\033[0m")
             elif "TOTAL DAMAGE" in line:
-                print(f"\033[92m{line.strip()}\033[0m")
-                print("\033[93m" + "-" * 60 + "\033[0m")
+                print(f"\033[1;92m{line.strip()}\033[0m")
+                print("\033[90m" + "-" * 65 + "\033[0m")
 
 if __name__ == "__main__":
     try:
         tail_f()
     except KeyboardInterrupt:
-        print("\n\n[i] Monitor finalizado.")
+        print("\n\n[i] Monitor finalizado. HELL sigue en guardia.")

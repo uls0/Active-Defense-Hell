@@ -11,7 +11,7 @@ from datetime import datetime
 from threat_intel import VirusTotalReporter, IsMaliciousReporter
 from scripts import smb_lethal
 
-# CONFIGURACIÓN HELL v4.4.0: INTELLIGENCE OVERLOAD
+# CONFIGURACIÓN HELL v4.5.0: BEACON INJECTION & DEEP FORENSICS
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [22, 2222, 3389, 4455]
@@ -22,12 +22,14 @@ VULN_PORTS = [10443]
 
 PORTS = WEB_PORTS + LETHAL_PORTS + RAW_PORTS + AD_PORTS + AI_PORTS + VULN_PORTS
 LOG_FILE = "logs/hell_activity.log"
+GRABIFY_LINK = "https://grabify.link/MM6CBG"
 
 VT_KEY = os.getenv("VT_API_KEY", "")
 ISM_KEY = "b0959d3e-97c6-451f-9f95-5148c2da7ddd"
 ISM_SECRET = "643a5731-1af4-4632-b75c-65955138288a"
 MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
+ATTRACTIVE_PATHS = ["/.env", "/config", "/admin", "/setup", "/credentials", "/.git", "/backup", "/SYSVOL"]
 persistent_offenders = {}
 
 class HellServer:
@@ -36,12 +38,10 @@ class HellServer:
         self.vt_reporter = VirusTotalReporter(VT_KEY)
         self.ism_reporter = IsMaliciousReporter(ISM_KEY, ISM_SECRET)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"HELL CORE v4.4.0: Intelligence Overload Enabled. Full Forensics Active.")
+        print(f"HELL CORE v4.5.0: Beacon Tracking (Grabify) Active. Full forensics.")
 
     def get_deep_intel(self, ip):
-        """Consulta forense profunda de la IP atacante"""
         try:
-            # Pedimos campos extendidos: ciudad, isp, proxy, hosting...
             fields = "status,country,regionName,city,isp,as,proxy,hosting,query"
             r = requests.get(f"http://ip-api.com/json/{ip}?fields={fields}", timeout=3)
             if r.status_code == 200:
@@ -49,56 +49,71 @@ class HellServer:
                 profile = []
                 if d.get('proxy'): profile.append("VPN/PROXY")
                 if d.get('hosting'): profile.append("DATACENTER")
-                profile_str = " | ".join(profile) if profile else "RESIDENTIAL/OTHER"
-                
                 return {
                     "location": f"{d.get('city')}, {d.get('regionName')}, {d.get('country')}",
                     "isp": f"{d.get('isp')} ({d.get('as')})",
-                    "profile": profile_str
+                    "profile": " | ".join(profile) if profile else "RESIDENTIAL"
                 }
         except: pass
         return {"location": "Unknown", "isp": "Unknown", "profile": "Unknown"}
 
     def log_event(self, ip, local_port, scanner, status="START", intel=None, duration=0, bytes_sent=0, payload=b""):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        
         if status == "START":
             deep = self.get_deep_intel(ip)
             score = intel.get('score', 0) if intel else 0
-            # Generar Hash del ataque para tracking de campañas
             p_hash = hashlib.sha256(payload).hexdigest()[:16] if payload else "N/A"
-            
             log_entry = (
                 f"\n[+] DECEPTION ENGAGED: {timestamp}\n"
                 f"----------------------------------------\n"
-                f"IP: {ip} | Port: {local_port}\n"
+                f"IP: {ip} | Port: {local_port} | Profile: {deep['profile']}\n"
                 f"Location: {deep['location']}\n"
                 f"Network: {deep['isp']}\n"
-                f"Connection Profile: {deep['profile']}\n"
                 f"Intel: Score {score} | Signature: {scanner}\n"
-                f"Attack Hash: {p_hash}\n"
+                f"Attack Hash: {p_hash} | Beacon: Injected\n"
             )
         else:
             mb_sent = round(bytes_sent / (1024 * 1024), 4)
             log_entry = (
                 f"[-] THREAT NEUTRALIZED: {timestamp}\n"
-                f"    └─ Persistence Duration: {round(duration, 2)}s\n"
-                f"    └─ Data Injected: {mb_sent}MB\n"
-                f"    └─ Final Mitigation: {status}\n"
+                f"    └─ Duration: {round(duration, 2)}s | Data: {mb_sent}MB\n"
+                f"    └─ Method: {status}\n"
                 f"----------------------------------------\n"
             )
         with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(log_entry)
 
-    def infinite_ssh_banner(self, client_socket, port):
-        sent = 0
-        banner = f"SSH-2.0-OpenSSH_8.9p1 (INTERNAL-SEC-NODE-{random.randint(1,99)})\r\n".encode()
-        client_socket.send(banner)
-        sent += len(banner)
-        while True:
-            fake_log = f"{datetime.now()} Audit: User authentication pending for session {random.getrandbits(32)}...".encode()
-            client_socket.send(fake_log + b"\r\n")
-            sent += len(fake_log) + 2
-            time.sleep(random.randint(8, 15))
+    def serve_honeytoken(self, client_socket, ip, path):
+        """Sirve un archivo falso que incluye el Beacon de Grabify"""
+        content = (
+            f"# INTERNAL CONFIGURATION FILE\n"
+            f"ADMIN_CREDENTIALS=admin:pass123\n"
+            f"# EMERGENCY BEACON TRIGGER\n"
+            f"REPORTING_SERVICE={GRABIFY_LINK}/telemetry.png\n"
+            f"DEBUG_LOG_SERVER=http://{MY_IP}/internal/logs\n"
+        )
+        header = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(content)}\r\n\r\n"
+        client_socket.send(header.encode() + content.encode())
+        return len(header) + len(content)
+
+    def handle_web_request(self, client_socket, data, ip):
+        try:
+            request_str = data.decode('utf-8', errors='ignore')
+            path = request_str.split(' ')[1] if ' ' in request_str else "/"
+            
+            if any(p in path for p in ATTRACTIVE_PATHS):
+                return self.serve_honeytoken(client_socket, ip, path)
+
+            if "cpu_heavy.js" in path:
+                with open("assets/cpu_heavy.js", "rb") as f: content = f.read()
+                mime = "application/javascript"
+            else:
+                with open("assets/web_trap.html", "rb") as f: content = f.read()
+                mime = "text/html"
+            
+            header = f"HTTP/1.1 200 OK\r\nContent-Type: {mime}\r\nContent-Length: {len(content)}\r\n\r\n"
+            client_socket.send(header.encode() + content)
+            return len(header) + len(content)
+        except: return 0
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
@@ -108,7 +123,7 @@ class HellServer:
         persistent_offenders[ip] = persistent_offenders.get(ip, 0) + 1
         start_time = time.time()
         total_bytes_sent = 0
-        final_status = "Interception complete"
+        final_status = "Saturation Complete"
 
         try:
             client_socket.settimeout(10.0)
@@ -116,32 +131,32 @@ class HellServer:
             except: data = b""
 
             intel = self.ism_reporter.check_ip(ip)
-            # Detección de scanner simplificada
             scanner = "Active Scanner"
             if b"GET" in data.upper(): scanner = "HTTP Bot"
             if b"SMB" in data: scanner = "SMB Bot"
 
             self.log_event(ip, local_port, scanner, status="START", intel=intel, payload=data)
 
-            # --- ESTRATEGIAS LETHAL v4.4 ---
             if local_port in [22, 2222]:
                 final_status = "Infinite SSH Banner"
-                total_bytes_sent = self.infinite_ssh_banner(client_socket, local_port)
-                return
+                # Inyectamos el link de Grabify en una línea del banner (algunos bots la siguen)
+                client_socket.send(f"SSH-2.0-OpenSSH_8.9p1 (Audit-Info: {GRABIFY_LINK}/ssh)\r\n".encode())
+                while True:
+                    client_socket.send(f"ID-{random.randint(1000,9999)}: System Check OK\r\n".encode())
+                    time.sleep(10)
 
-            if local_port == 445 or b"SMB" in data:
+            elif local_port == 445 or b"SMB" in data:
                 final_status = "SMB Lethal Trap"
                 total_bytes_sent = smb_lethal.handle_smb_attack(client_socket, ip, (lambda *args, **kwargs: None), local_port)
                 return 
 
-            if local_port in WEB_PORTS or local_port in AI_PORTS:
-                final_status = "Nested Math-Bomb"
-                client_socket.send(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
+            elif local_port in WEB_PORTS or local_port in AI_PORTS:
+                final_status = "Web Trap / Beacon"
+                total_bytes_sent += self.handle_web_request(client_socket, data, ip)
                 while True:
-                    client_socket.send(b'{"data":[' * 500)
-                    time.sleep(0.5)
+                    client_socket.send(os.urandom(1))
+                    time.sleep(20)
             else:
-                final_status = "Saturation Stream"
                 while True:
                     client_socket.send(os.urandom(65536))
                     total_bytes_sent += 65536

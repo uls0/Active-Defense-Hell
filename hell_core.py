@@ -7,16 +7,19 @@ import json
 import random
 import requests
 import signal
-from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage
+from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator
 
-VERSION = "v9.0.0-PURE"
+VERSION = "v9.0.2-PURE-STABLE"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
-PORTS = [22, 80, 443, 445, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200]
+# Arsenal Consolidado: 16 Puertos
+PORTS = [22, 80, 443, 445, 88, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200]
+
+MY_PUBLIC_IP = os.getenv("MY_IP", "127.0.0.1")
 
 class HellServer:
     def __init__(self):
-        print(f"[*] RESTORING {VERSION} | STABLE DEFENSE")
+        print(f"[*] INITIALIZING {VERSION} | STANDALONE PURE")
         os.makedirs("logs/forensics", exist_ok=True)
         os.makedirs("logs/malware", exist_ok=True)
         self.stats = {}
@@ -41,7 +44,7 @@ class HellServer:
                 if port not in self.stats[ip]['ports']: self.stats[ip]['ports'].append(port)
             
             actor, conf = self.profiler.classify_attacker(self.stats[ip]['commands'], ja3, self.stats[ip]['ports'])
-            report = f"\n[+] TRIGGERED: {timestamp}\nIP: {ip} | Actor: {actor}({conf}%)\nOrigin: {loc} | Port: {port}\n----------------------------------------\n"
+            report = f"\n[+] TRIGGERED: {timestamp}\nIP: {ip} | Actor: {actor}({conf}%)\nOrigin: {loc} | Network: {isp} | Port: {port}\n----------------------------------------\n"
             with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
             print(f"[🔥] {actor} ENGAGED: {ip} on {port}")
         threading.Thread(target=background_log, daemon=True).start()
@@ -59,27 +62,45 @@ class HellServer:
         final_mode = "Mitigation"
 
         try:
-            client_socket.settimeout(10.0)
+            client_socket.settimeout(15.0)
+            
+            # --- RUTEO DE SERVICIOS PURE ---
+            if local_port == 179:
+                bgp_emulator.handle_bgp_open(client_socket, ip)
+                final_mode = "BGP-Trap"
+                return
+            if local_port == 502:
+                scada_emulator.scada_tarpit(client_socket)
+                final_mode = "SCADA-Trap"
+                return
+            if local_port == 22:
+                # Esta función ahora inyecta la Bomba de 4MB
+                shell_emulator.handle_cowrie_trap(client_socket, ip)
+                final_mode = "SSH-Bomba-Fifield"
+                return
             if local_port in [445, 4455]:
                 total_bytes = smb_lethal.handle_smb_session(client_socket, ip)
                 final_mode = "AD-Maze"
-            elif local_port == 22:
-                shell_emulator.handle_cowrie_trap(client_socket, ip)
-                final_mode = "SSH-Trap"
-            elif local_port == 3306:
+                return
+            if local_port == 3306:
                 database_emulator.handle_mysql_trap(client_socket)
-                final_mode = "DB-Bomb"
-            else:
-                while True:
-                    client_socket.send(b"\x00")
-                    total_bytes += 1024; time.sleep(30)
+                final_mode = "DB-DataBomb"
+                return
+
+            # Tarpit genérico para Web/Otros
+            while True:
+                client_socket.send(b"\x00")
+                total_bytes += 1024; time.sleep(30)
         except: pass
         finally:
             duration = time.time() - start_time
-            mb = round(total_bytes / (1024*1024), 4)
-            with open(LOG_FILE, "a") as f:
-                f.write(f"[-] NEUTRALIZED: {time.ctime()} | Held: {round(duration,2)}s | Data: {mb}MB | Mode: {final_mode}\n")
-            if duration > 60: forensics_engine.create_evidence_pack(ip, time.time())
+            if ip in self.stats:
+                mb = round(total_bytes / (1024*1024), 4)
+                self.stats[ip]['total_time'] += duration
+                self.stats[ip]['total_data'] += mb
+                with open(LOG_FILE, "a") as f:
+                    f.write(f"[-] NEUTRALIZED: {time.ctime()} | Held: {round(duration,2)}s | Data: {mb}MB | Mode: {final_mode}\n")
+                if duration > 60: forensics_engine.create_evidence_pack(ip, time.time())
             client_socket.close()
 
     def start_listener(self, port):
@@ -87,17 +108,20 @@ class HellServer:
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             server.bind((HOST, port))
-            server.listen(200)
-            print(f"[✅] Port {port} armed.")
+            server.listen(500)
+            print(f"[✅] Port {port}: ARMED")
             while True:
                 client, addr = server.accept()
                 threading.Thread(target=self.handle_client, args=(client, addr, port), daemon=True).start()
         except: pass
 
     def start(self):
-        for port in PORTS:
-            threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
-        print(f"[🚀] {VERSION} Operational. Deception grid active.")
+        try:
+            network_mangler.apply_mss_clamping(PORTS)
+            threading.Thread(target=icmp_tarpit.start_icmp_tarpit, args=({"127.0.0.1"},), daemon=True).start()
+        except: pass
+        for port in PORTS: threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
+        print(f"[🚀] {VERSION} IS ACTIVE. ARSENAL SYNCHRONIZED.")
         while True:
             try: time.sleep(1)
             except: break

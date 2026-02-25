@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  hell_app:
+  hell_core:
     build: .
     container_name: hell_core
     restart: always
     network_mode: "host"
-    privileged: true # Damos privilegios totales para asegurar bind en puertos bajos (<1024)
+    privileged: true
     environment:
       - MY_IP=${MY_IP:-127.0.0.1}
     volumes:
@@ -15,11 +15,19 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
+  hell_dashboard:
+    build: .
+    container_name: hell_dashboard
+    restart: always
+    network_mode: "host"
+    command: python3 -u scripts/dashboard_server.py
+    volumes:
+      - ./logs:/app/logs
+      - ./scripts:/app/scripts
+      - ./templates:/app/templates
+    depends_on:
+      - hell_core
 
   hell_db:
     image: mysql:8.0
@@ -28,3 +36,13 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_hell_2026}
     volumes:
       - hell_data:/var/lib/mysql
+    # La DB no necesita host mode, se queda en su red privada
+    networks:
+      - hell_net
+
+networks:
+  hell_net:
+    driver: bridge
+
+volumes:
+  hell_data:

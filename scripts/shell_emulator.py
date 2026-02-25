@@ -3,7 +3,6 @@ import os
 import random
 
 def terminal_crusher(client_socket):
-    print("[⚔️] Mesh-Intel: Iniciando Terminal Crusher (CPU/RAM/Disk Exhaustion).")
     ansi_bomb = b"\x1b[2J\x1b[H\x1b[?1049h"
     try:
         while True:
@@ -15,50 +14,47 @@ def terminal_crusher(client_socket):
             time.sleep(0.04)
     except: pass
 
-def handle_cowrie_trap(client_socket, ip):
-    """Simula Ubuntu y captura comandos para análisis forense"""
+def handle_cowrie_trap(client_socket, ip, hit_count=0):
+    """Bait & Switch: Cambia la identidad del puerto según la insistencia del bot"""
     try:
-        banner = b"Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-89-generic x86_64)\r\n\r\n"
-        client_socket.send(banner)
-        client_socket.send(f"hell-node-01 login: ".encode())
-        user = client_socket.recv(1024).decode().strip()
-        client_socket.send(b"Password: ")
-        client_socket.recv(1024)
+        # Personalidades del puerto 22
+        identities = [
+            {"banner": b"Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-89-generic x86_64)\r\n", "prompt": b"root@srv-prod-01:~# "},
+            {"banner": b"Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version 12.2(44)SE, RELEASE SOFTWARE (fc1)\r\n", "prompt": b"Switch> "},
+            {"banner": b"SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.5\r\n", "prompt": b"admin@nas-storage:~$ "},
+            {"banner": b"MikroTik 6.48.6 (stable) on RouterOS\r\n", "prompt": b"[admin@MikroTik] > "}
+        ]
         
-        welcome = f"Welcome to Ubuntu 22.04.3 LTS\r\nroot@hell-node-01:~# ".encode()
-        client_socket.send(welcome)
+        # Elegir identidad basada en hit_count para confundir recon
+        identity = identities[hit_count % len(identities)]
+        
+        client_socket.send(identity["banner"])
+        client_socket.send(b"login: ")
+        client_socket.recv(1024)
+        client_socket.send(b"password: ")
+        client_socket.recv(1024)
+        client_socket.send(b"\r\nAccess Granted.\r\n")
+        client_socket.send(identity["prompt"])
 
-        # Captura de comandos
-        commands_captured = []
-        while True:
+        # Esperar 2 comandos y luego Crusher
+        for _ in range(2):
             cmd = client_socket.recv(1024).decode().strip()
             if not cmd: break
-            commands_captured.append(cmd)
-            
-            # Guardar en log temporal de la IP
-            with open(f"logs/forensics/commands_{ip}.log", "a") as f:
-                f.write(f"[{time.ctime()}] {cmd}\n")
-
-            if cmd in ["exit", "logout"]: break
-            
-            # El contraataque se dispara tras 3 comandos o comandos sospechosos
-            if len(commands_captured) >= 3 or "curl" in cmd or "wget" in cmd:
-                client_socket.send(b"\r\n-bash: critical memory corruption detected. Dumping core...\r\n")
-                terminal_crusher(client_socket)
-                break
-            
-            client_socket.send(f"{cmd}: command not found\r\nroot@hell-node-01:~# ".encode())
-            
+            client_socket.send(f"{cmd}: command not found\r\n".encode())
+            client_socket.send(identity["prompt"])
+        
+        client_socket.send(b"\r\n*** CRITICAL SYSTEM ERROR: REBOOTING ***\r\n")
+        terminal_crusher(client_socket)
     except: pass
 
 def handle_mainframe_shell(client_socket, ip):
+    # Se mantiene la simulación de Monex
     try:
         client_socket.send(b"ICH70001I - LOGIN TO IBM z/OS v2.5 AT MONEX-FINANCIAL-MEX\r\nENTER USERID - \r\n")
         client_socket.recv(1024)
         client_socket.send(b"ENTER PASSWORD - \r\n")
         client_socket.recv(1024)
-        client_socket.send(b"ICH70008I LOGIN SUCCESSFUL. SYSTEM: MONEX-MX-COBOL-V8\r\nREADY\r\n")
-        time.sleep(15)
-        client_socket.send(b"\r\n*** CRITICAL SYSTEM OVERLOAD - INITIATING MEMORY DUMP ***\r\n")
+        client_socket.send(b"ICH70008I LOGIN SUCCESSFUL. READY\r\n")
+        time.sleep(10)
         terminal_crusher(client_socket)
     except: pass

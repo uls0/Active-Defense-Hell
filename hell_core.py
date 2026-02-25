@@ -7,9 +7,9 @@ import json
 import random
 import requests
 import signal
-from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit
+from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit, threat_intel
 
-VERSION = "v10.6.2-SINGULARITY-ELITE"
+VERSION = "v10.7.0-SINGULARITY-ELITE"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
 # Puertos base + Rango Tarpit 20000-20100
@@ -25,6 +25,7 @@ class HellServer:
         os.makedirs("logs/forensics", exist_ok=True)
         os.makedirs("logs/malware", exist_ok=True)
         os.makedirs("logs/abuse_reports", exist_ok=True)
+        os.makedirs("logs/intel_reports", exist_ok=True)
         self.stats = {}
         self.ai = predictive_ai.HellPredictiveAI()
         self.profiler = profiler_engine.HellProfiler()
@@ -32,24 +33,42 @@ class HellServer:
 
     def get_full_intel(self, ip):
         try:
-            r = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,as,isp,proxy", timeout=1.2).json()
+            r = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,as,isp,proxy,reverse", timeout=1.2).json()
             loc = f"{r.get('city')}, {r.get('country')}"
             asn = r.get('as', 'Unknown')
             isp = r.get('isp', 'Unknown')
-            return loc, asn, isp
-        except: return "Unknown", "Unknown", "Unknown"
+            rdns = r.get('reverse', ip)
+            profile = "PROXY/VPN" if r.get('proxy') else "RESIDENTIAL"
+            return loc, asn, isp, rdns, profile
+        except: return "Unknown", "Unknown", "Unknown", ip, "UNKNOWN"
 
     def log_engagement(self, ip, port, ja3=None):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         def background_log():
-            loc, asn, isp = self.get_full_intel(ip)
+            loc, asn, isp, rdns, profile = self.get_full_intel(ip)
             if ip not in self.stats:
-                self.stats[ip] = {'hits': 1, 'ports': [port], 'commands': [], 'ja3': ja3, 'total_time': 0, 'total_data': 0, 'loc': loc, 'asn': asn}
+                # Consulta VT solo para IPs nuevas
+                intel = threat_intel.analyze_ip(ip, VT_KEY)
+                self.stats[ip] = {
+                    'hits': 1, 'ports': [port], 'commands': [], 'ja3': ja3, 
+                    'total_time': 0, 'total_data': 0, 'loc': loc, 'asn': asn, 
+                    'isp': isp, 'rdns': rdns, 'profile': profile, 'intel': intel
+                }
             else:
                 self.stats[ip]['hits'] += 1
+                if port not in self.stats[ip]['ports']: self.stats[ip]['ports'].append(port)
             
             actor, conf = self.profiler.classify_attacker(self.stats[ip]['commands'], ja3, self.stats[ip]['ports'])
-            report = f"\n[+] ULTIMATE DECEPTION TRIGGERED: {timestamp}\n----------------------------------------\nIP: {ip}\nOrigin: {loc} | Actor: {actor}({conf}%)\nNetwork: {isp} ({asn})\nTarget Port: {port} | Hits: {self.stats[ip]['hits']}\n----------------------------------------\n"
+            
+            report = f"\n[+] ULTIMATE DECEPTION TRIGGERED: {timestamp}\n"
+            report += f"----------------------------------------\n"
+            report += f"IP: {ip} ({rdns})\n"
+            report += f"Origin: {loc} | Profile: {profile}\n"
+            report += f"Network: {isp} ({asn})\n"
+            report += f"Classification: {actor} ({conf}%)\n"
+            report += f"Target Port: {port} | Hit Count: {self.stats[ip]['hits']}\n"
+            report += f"----------------------------------------\n"
+            
             with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
             print(f"[🔥] {actor} ENGAGED: {ip} on port {port}")
         threading.Thread(target=background_log, daemon=True).start()
@@ -104,7 +123,11 @@ class HellServer:
             if ip in self.stats:
                 self.stats[ip]['total_time'] += duration
                 self.stats[ip]['total_data'] += mb
-                report = f"[-] THREAT NEUTRALIZED: {time.ctime()}\n    └─ Held: {round(duration, 2)}s | Data: {mb}MB | Mode: {final_mode}\n    └─ TOTAL DAMAGE: Time Lost: {round(self.stats[ip]['total_time'], 2)}s | Injected: {round(self.stats[ip]['total_data'], 2)}MB\n----------------------------------------\n"
+                
+                report = f"\n[-] THREAT NEUTRALIZED: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                report += f"    └─ TOTAL DAMAGE: Time Lost: {round(self.stats[ip]['total_time'], 2)}s | Data: {round(self.stats[ip]['total_data'], 2)}MB\n"
+                report += f"----------------------------------------\n"
+                
                 with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
                 
                 # --- DISPARADORES AUTOMÁTICOS ---

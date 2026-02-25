@@ -2,6 +2,10 @@ import time
 import os
 import random
 from scripts import network_simulator
+try:
+    from scripts import oracle_engine
+except ImportError:
+    oracle_engine = None
 
 def terminal_crusher(client_socket):
     ansi_bomb = b"\x1b[2J\x1b[H\x1b[?1049h"
@@ -22,17 +26,22 @@ def handle_cowrie_trap(client_socket, ip, hit_count=0):
         client_socket.send(prompt)
 
         while True:
-            cmd = client_socket.recv(1024).decode().strip()
-            if not cmd: break
+            cmd_data = client_socket.recv(1024)
+            if not cmd_data: break
+            cmd = cmd_data.decode('utf-8', errors='ignore').strip()
             
-            # --- DETECCIÓN DE MOVIMIENTO LATERAL ---
             if "ssh" in cmd or "ping" in cmd or "nmap" in cmd:
-                # Extraer una IP falsa de la red interna
                 fake_target = "10.0.0." + str(random.randint(2, 254))
                 network_simulator.handle_lateral_request(client_socket, fake_target)
                 return
 
             if len(cmd) > 0:
-                client_socket.send(f"{cmd}: command not found\r\n".encode())
+                # --- ORACLE AI RESPONSE ---
+                if oracle_engine and oracle_engine.oracle.enabled:
+                    ai_resp = oracle_engine.oracle.get_dynamic_response(cmd)
+                    client_socket.send(f"{ai_resp}\r\n".encode())
+                else:
+                    client_socket.send(f"{cmd}: command not found\r\n".encode())
+                
                 client_socket.send(prompt)
     except: pass

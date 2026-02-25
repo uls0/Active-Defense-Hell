@@ -2,86 +2,71 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>HELL Dashboard | v9.5.0 Intelligence</title>
+    <title>HELL v10.0.0 | SINGULARITY</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'JetBrains Mono', monospace; }
-        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
-        .text-neon { color: #58a6ff; text-shadow: 0 0 10px #58a6ff; }
+        body { background-color: #050505; color: #e0e0e0; font-family: 'Courier New', monospace; }
+        .neon-border { border: 1px solid #ff0000; box-shadow: 0 0 10px #ff0000; }
+        .stat-card { background: rgba(20, 20, 20, 0.9); border: 1px solid #333; }
+        .glitch { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-red-500">💀 HELL TACTICAL DASHBOARD v9.5.0</h1>
-        <div class="text-xs text-gray-500 text-right">Designed by ULSO+GCLI<br>Status: INJECTING PAYLOADS</div>
+<body class="p-4">
+    <div class="flex justify-between items-center border-b border-red-900 pb-4 mb-6">
+        <h1 class="text-2xl font-bold text-red-600 tracking-tighter">PROJECT HELL // v10.0.0 SINGULARITY</h1>
+        <div class="bg-red-950 text-red-500 px-3 py-1 rounded text-xs font-bold glitch">SYSTEM STATUS: LETHAL</div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="card text-center">
-            <h3 class="text-xs text-gray-400 uppercase">Daño (GB)</h3>
-            <div id="total_data" class="text-2xl font-bold text-neon">0.0</div>
+        <div class="stat-card p-4 rounded text-center">
+            <span class="text-gray-500 text-xs uppercase">Payload Injected</span>
+            <div id="data" class="text-3xl font-bold text-red-500">0 GB</div>
         </div>
-        <div class="card text-center">
-            <h3 class="text-xs text-gray-400 uppercase">Retención (Hrs)</h3>
-            <div id="total_time" class="text-2xl font-bold text-red-400">0.0</div>
+        <div class="stat-card p-4 rounded text-center">
+            <span class="text-gray-500 text-xs uppercase">Secured Time</span>
+            <div id="time" class="text-3xl font-bold text-blue-500">0 Hrs</div>
         </div>
-        <div class="card text-center">
-            <h3 class="text-xs text-gray-400 uppercase">APT Detected</h3>
-            <div id="apt_count" class="text-2xl font-bold text-purple-400">0</div>
+        <div class="stat-card p-4 rounded text-center">
+            <span class="text-gray-500 text-xs uppercase">Kernel Bans</span>
+            <div id="blocks" class="text-3xl font-bold text-yellow-500">0</div>
         </div>
-        <div class="card text-center">
-            <h3 class="text-xs text-gray-400 uppercase">Bot/Scanners</h3>
-            <div id="bot_count" class="text-2xl font-bold text-green-400">0</div>
+        <div class="stat-card p-4 rounded text-center">
+            <span class="text-gray-500 text-xs uppercase">Active Nodes</span>
+            <div class="text-3xl font-bold text-green-500">MESH-ON</div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="card lg:col-span-2">
-            <h3 class="text-sm font-bold mb-4 uppercase text-gray-400">Live Attack Feed</h3>
-            <table class="w-full text-xs text-left">
-                <thead><tr class="border-b border-gray-700 text-gray-500"><th>TIME</th><th>IP ADDRESS</th><th>ADVERSARY PROFILE</th></tr></thead>
-                <tbody id="event_feed"></tbody>
-            </table>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="stat-card p-4 rounded overflow-hidden">
+            <h3 class="text-red-800 font-bold mb-4 uppercase">Target Engagement Feed</h3>
+            <div id="feed" class="space-y-2 text-xs"></div>
         </div>
-        <div class="card text-center">
-            <h3 class="text-sm font-bold mb-4 uppercase text-gray-400">Origin Geo-Distribution</h3>
-            <canvas id="geoChart"></canvas>
+        <div class="stat-card p-4 rounded">
+            <h3 class="text-yellow-800 font-bold mb-4 uppercase">The Wall (Kernel Level Drops)</h3>
+            <div id="wall" class="grid grid-cols-2 gap-2 text-[10px]"></div>
         </div>
     </div>
 
     <script>
-        let geoChart;
         async function update() {
             const r = await fetch('/api/stats');
             const d = await r.json();
-            
-            document.getElementById('total_data').innerText = (d.total_data / 1024).toFixed(2);
-            document.getElementById('total_time').innerText = (d.total_time / 3600).toFixed(2);
-            document.getElementById('apt_count').innerText = d.actors.APT_CANDIDATE || 0;
-            document.getElementById('bot_count').innerText = (d.actors.BOT_GENERIC || 0) + (d.actors.SCANNER_SHODAN || 0);
+            document.getElementById('data').innerText = (d.total_data / 1024).toFixed(2) + " GB";
+            document.getElementById('time').innerText = (d.total_time / 3600).toFixed(1) + " HR";
+            document.getElementById('blocks').innerText = d.kernel_blocks.length;
 
-            const feed = document.getElementById('event_feed');
-            feed.innerHTML = d.recent_events.reverse().map(e => `
-                <tr class="border-b border-gray-800">
-                    <td class="py-2 text-gray-500">${e.time}</td>
-                    <td class="py-2 font-bold">${e.ip}</td>
-                    <td class="py-2"><span class="px-2 py-0.5 rounded ${e.actor === 'APT_CANDIDATE' ? 'bg-red-900 text-red-200' : 'bg-blue-900 text-blue-200'}">${e.actor}</span></td>
-                </tr>
+            document.getElementById('feed').innerHTML = d.recent_events.map(e => `
+                <div class="border-l-2 border-red-900 pl-2 py-1">
+                    <span class="text-gray-600">${e.time}</span> | <b>${e.ip}</b> -> <span class="text-red-400">${e.actor}</span>
+                </div>
             `).join('');
 
-            const ctx = document.getElementById('geoChart').getContext('2d');
-            if(geoChart) geoChart.destroy();
-            geoChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(d.countries),
-                    datasets: [{ data: Object.values(d.countries), backgroundColor: ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa'] }]
-                },
-                options: { plugins: { legend: { display: false } } }
-            });
+            document.getElementById('wall').innerHTML = d.kernel_blocks.map(ip => `
+                <div class="bg-red-950 text-red-200 px-2 py-1 rounded border border-red-800">${ip}</div>
+            `).join('');
         }
-        setInterval(update, 5000);
+        setInterval(update, 3000);
         update();
     </script>
 </body>

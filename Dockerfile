@@ -2,19 +2,23 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema necesarias para psutil y otras herramientas
 RUN apt-get update && apt-get install -y \
     gcc \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar archivos del proyecto
 COPY . .
 
-# Instalar el nuevo SDK google-genai y requests
-RUN pip install --no-cache-dir google-genai requests
+# Instalar librerías de Python necesarias para HELL v8.9.1
+RUN pip install --no-cache-dir \
+    requests \
+    psutil \
+    flask \
+    google-genai
 
-# Exponer el puerto del Tarpit
-EXPOSE 8080
+# Exponer puertos (informativo, ya que usamos network_mode: host)
+EXPOSE 80 443 445 3306 8888 2222
 
-# Comando para ejecutar el core
 CMD ["python", "hell_core.py"]

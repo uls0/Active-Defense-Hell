@@ -15,24 +15,21 @@ def handle_lateral_request(client_socket, target_ip):
     node_name = internal_nodes.get(target_ip, "Internal-Generic-Server")
     
     try:
-        # 1. Simular autenticación Zero-Trust
-        client_socket.send(f"
+        # 1. Simular autenticación Zero-Trust con sintaxis multilínea correcta
+        welcome_msg = f"""
 --- DIGITAL TV GROUP ZERO-TRUST GATEWAY ---
-".encode())
-        client_socket.send(f"Target: {node_name} ({target_ip})
-".encode())
-        client_socket.send(b"MFA Required. Please enter 6-digit Mobile Token: ")
+Target: {node_name} ({target_ip})
+MFA Required. Please enter 6-digit Mobile Token: """
+        
+        client_socket.send(welcome_msg.encode())
         
         # El atacante escribirá algo, pero nunca será correcto
         token = client_socket.recv(1024)
         time.sleep(2)
-        client_socket.send(b"
-[!] MFA Token Timeout. Retrying authentication loop...
-")
+        client_socket.send(b"\r\n[!] MFA Token Timeout. Retrying authentication loop...\r\n")
         
         # 2. Tarpit de Autenticación Infinito
         while True:
-            client_socket.send(b"Waiting for MFA push notification approval...
-")
+            client_socket.send(b"Waiting for MFA push notification approval...\r\n")
             time.sleep(60)
     except: pass

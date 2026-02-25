@@ -5,17 +5,16 @@ services:
     build: .
     container_name: hell_core
     restart: always
-    network_mode: "host" # Usamos modo host para mayor realismo y soporte de ICMP Tarpit
+    network_mode: "host"
+    privileged: true # Damos privilegios totales para asegurar bind en puertos bajos (<1024)
     environment:
       - MY_IP=${MY_IP:-127.0.0.1}
-      - HELL_MESH_PEERS=${HELL_MESH_PEERS:-}
-      - HELL_NODE_ID=NODE-SFO-01
     volumes:
       - ./logs:/app/logs
       - ./scripts:/app/scripts
-      - ./templates:/app/templates
     cap_add:
-      - NET_ADMIN # Necesario para MSS Clamping e Iptables
+      - NET_ADMIN
+      - NET_RAW
     logging:
       driver: "json-file"
       options:
@@ -29,12 +28,3 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_hell_2026}
     volumes:
       - hell_data:/var/lib/mysql
-    networks:
-      - hell_net
-
-networks:
-  hell_net:
-    driver: bridge
-
-volumes:
-  hell_data:

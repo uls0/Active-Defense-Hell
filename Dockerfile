@@ -5,6 +5,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
+    iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
@@ -15,5 +16,9 @@ RUN pip install --no-cache-dir \
     flask \
     google-genai
 
-# -u activa el modo unbuffered (vital para ver logs en Docker)
-CMD ["python", "-u", "hell_core.py"]
+RUN chmod +x entrypoint.sh
+
+# Exponer puertos informativos
+EXPOSE 80 443 445 3306 8888 2222
+
+ENTRYPOINT ["./entrypoint.sh"]

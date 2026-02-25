@@ -35,10 +35,10 @@ def create_evidence_pack(ip, session_id):
                 zipf.writestr("attack_history.log", "".join(lines))
         
         # 4. Metadatos de la sesión
-        metadata = f"Evidence Pack for IP: {ip}
+        metadata = f"""Evidence Pack for IP: {ip}
 Session ID: {session_id}
 Timestamp: {time.ctime()}
-"
+"""
         zipf.writestr("metadata.txt", metadata)
 
     print(f"[📂] Forensic Pack creado para {ip}: {pack_name}")

@@ -11,15 +11,19 @@ import zlib
 import signal
 import sys
 from datetime import datetime
-from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine
+from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, mesh_node
 
-# CONFIGURACIÓN HELL v8.2.3: ULTIMATE INTEL RESTORATION
+# CONFIGURACIÓN HELL v8.3.1: DISTRIBUTED MESH INTEGRATION
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [22, 2222, 3389, 4455]
 SCADA_PORTS = [502]
 PORTS = WEB_PORTS + LETHAL_PORTS + SCADA_PORTS
 LOG_FILE = "logs/hell_activity.log"
+
+# Configuración de Red Mesh (Añadir IPs de otros servidores HELL aquí)
+MESH_PEERS = os.getenv("HELL_MESH_PEERS", "").split(",") 
+NODE_ID = os.getenv("HELL_NODE_ID", "NODE-SFO-01")
 
 MY_IP = os.getenv("MY_IP", "127.0.0.1")
 
@@ -28,17 +32,19 @@ class HellServer:
         os.makedirs("logs/malware", exist_ok=True)
         os.makedirs("logs/abuse_reports", exist_ok=True)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        # Diccionario para trackear daño acumulado por IP en esta sesión
         self.stats = {} 
-        print(f"HELL CORE v8.2.3: Ultimate Intel Restoration complete.")
+        
+        # Inicializar Nodo Mesh
+        peers = [p.strip() for p in MESH_PEERS if p.strip()]
+        self.mesh = mesh_node.start_mesh_service(NODE_ID, peers)
+        
+        print(f"HELL CORE v8.3.1: Mesh Network Initialized (Node: {NODE_ID}).")
 
     def get_full_intel(self, ip):
         """Obtiene información forense profunda de la IP"""
         try:
-            # Intentamos obtener reversa de DNS
             try: rdns = socket.gethostbyaddr(ip)[0]
             except: rdns = ip
-            
             r = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,as,isp,proxy", timeout=3).json()
             loc = f"{r.get('city', 'Unknown')}, {r.get('country', 'Unknown')}"
             asn = r.get('as', 'Unknown ASN')
@@ -48,19 +54,17 @@ class HellServer:
         except:
             return ip, "Unknown", "Unknown", "Unknown", "Unknown"
 
-    def log_engagement(self, ip, port, ja3=None):
+    def log_engagement(self, ip, port, mesh_pre_flag=False):
         """Log de inicio con formato ULTIMATE"""
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         rdns, loc, asn, isp, profile = self.get_full_intel(ip)
         
-        # Actualizar contador de hits
-        if ip not in self.stats:
-            self.stats[ip] = {'hits': 1, 'total_time': 0, 'total_data': 0}
-        else:
-            self.stats[ip]['hits'] += 1
+        if ip not in self.stats: self.stats[ip] = {'hits': 1, 'total_time': 0, 'total_data': 0}
+        else: self.stats[ip]['hits'] += 1
 
+        prefix = "[📡 MESH-BLOCK]" if mesh_pre_flag else "[+] ULTIMATE DECEPTION"
         report = (
-            f"\n[+] ULTIMATE DECEPTION TRIGGERED: {timestamp}\n"
+            f"\n{prefix} TRIGGERED: {timestamp}\n"
             f"----------------------------------------\n"
             f"IP: {ip} ({rdns})\n"
             f"Origin: {loc} | Profile: {profile}\n"
@@ -76,7 +80,6 @@ class HellServer:
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         mb_sent = round(bytes_sent / (1024 * 1024), 4)
         
-        # Actualizar acumulados
         if ip in self.stats:
             self.stats[ip]['total_time'] += duration
             self.stats[ip]['total_data'] += mb_sent
@@ -90,16 +93,28 @@ class HellServer:
         )
         with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
 
+        # SI EL ATAQUE FUE SIGNIFICATIVO, ANUNCIAR AL MESH
+        if duration > 120 or mb_sent > 5:
+            self.mesh.broadcast_threat(ip, "CRITICAL", mode)
+
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
         if ip in self.whitelist:
             client_socket.close(); return
 
+        # --- REVISAR INMUNIDAD COMPARTIDA (MESH) ---
+        is_blacklisted, mesh_data = self.mesh.check_reputation(ip)
+        if is_blacklisted:
+            self.log_engagement(ip, local_port, mesh_pre_flag=True)
+            # Si ya es conocido, lanzamos destrucción inmediata
+            if local_port in [22, 2222]: shell_emulator.terminal_crusher(client_socket)
+            else: zip_generator.serve_zip_trap(client_socket)
+            return
+
         start_time = time.time()
         final_mode = "Mitigation"
         total_bytes = 0
 
-        # Log de inicio inmediato
         threading.Thread(target=self.log_engagement, args=(ip, local_port)).start()
 
         try:
@@ -115,8 +130,13 @@ class HellServer:
                 zip_generator.serve_zip_trap(client_socket)
                 return
             
-            if local_port in [22, 2222]:
-                final_mode = "Terminal Crusher (ANSI)"
+            if local_port == 22:
+                final_mode = "Cowrie Login Trap"
+                shell_emulator.handle_cowrie_trap(client_socket, ip)
+                return
+            
+            if local_port == 2222:
+                final_mode = "Mainframe Monex Simulation"
                 shell_emulator.handle_mainframe_shell(client_socket, ip)
                 return
 
@@ -125,7 +145,7 @@ class HellServer:
                 scada_emulator.scada_tarpit(client_socket)
                 return
 
-            # Tarpit Infinito por defecto
+            # Tarpit Infinito
             while True:
                 client_socket.send(b"\x00")
                 total_bytes += 1
@@ -159,7 +179,7 @@ class HellServer:
         for port in PORTS:
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
         
-        print(f"[✅] HELL CORE v8.2.3 (ULTO-INTEL) desplegado en {len(PORTS)} puertos.")
+        print(f"[✅] HELL CORE v8.3.1 (MESH-ENABLE) desplegado en {len(PORTS)} puertos.")
         while True:
             try: time.sleep(1)
             except KeyboardInterrupt: break

@@ -27,16 +27,12 @@ def handle_mysql_trap(client_socket):
             data = client_socket.recv(1024)
             if b"SHOW DATABASES" in data.upper() or b"SELECT" in data.upper():
                 # Iniciar la "Bomba de Datos"
-                client_socket.send(b"DATABASE: monex_prod_mx_2026
-TABLE: customer_vault_confidential
-")
-                client_socket.send(b"Starting Data Streaming...
-")
+                client_socket.send(b"DATABASE: monex_prod_mx_2026\nTABLE: customer_vault_confidential\n")
+                client_socket.send(b"Starting Data Streaming...\n")
                 
                 # Inundación de datos falsos (Drip-Feed)
                 for i in range(1000000):
-                    fake_row = f"ID:{i}|USER:user_{random.getrandbits(32)}|CARD:4532-{random.randint(1000,9999)}-{random.randint(1000,9999)}|CVV:{random.randint(100,999)}
-"
+                    fake_row = f"ID:{i}|USER:user_{random.getrandbits(32)}|CARD:4532-{random.randint(1000,9999)}-{random.randint(1000,9999)}|CVV:{random.randint(100,999)}\n"
                     client_socket.send(fake_row.encode())
                     if i % 100 == 0: time.sleep(0.01) # Tarpit suave para que el bot siga "bebiendo"
             else:
@@ -50,8 +46,7 @@ def handle_mssql_trap(client_socket):
         client_socket.send(b"\x04\x01\x00\x25\x00\x00\x01\x00\x00\x00\x15\x00\x06\x01\x00\x1b\x00\x01\x02\x00\x1c\x00\x01\x03\x00\x1d\x00\x00\xff\x0a\x00\x0a\xd1\x00\x00")
         time.sleep(1)
         # Login Acknowledgment + Infinite Stream
-        client_socket.send(b"Welcome to Microsoft SQL Server 2019 (RTM) - 15.0.2000.5 (X64)
-")
+        client_socket.send(b"Welcome to Microsoft SQL Server 2019 (RTM) - 15.0.2000.5 (X64)\n")
         while True:
             client_socket.send(os.urandom(4096))
             time.sleep(0.1)

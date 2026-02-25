@@ -2,94 +2,52 @@ import socket
 import threading
 import time
 import os
-import binascii
-import random
-import requests
-import base64
 import json
-import zlib
 import signal
 import sys
-from datetime import datetime
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine
 
-# Try to import mesh_node optionally
-try: from scripts import mesh_node
-except ImportError: mesh_node = None
-
-# CONFIGURACIÓN HELL v8.9.4: MODULAR & EXTERNAL MESH
+# CONFIGURACIÓN HELL v8.9.5: PASSIVE INTELLIGENCE CONSUMER
 HOST = '0.0.0.0'
-WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
-LETHAL_PORTS = [22, 2222, 3389]
-DB_PORTS = [3306, 1433]
-AD_PORTS = [445, 4455, 389, 88]
-PORTS = WEB_PORTS + LETHAL_PORTS + DB_PORTS + AD_PORTS + [502]
+PORTS = [80, 443, 445, 22, 2222, 3306, 1433, 3389, 389, 88, 502, 8080, 8443, 9200]
 LOG_FILE = "logs/hell_activity.log"
-
-MY_IP = os.getenv("MY_IP", "127.0.0.1")
+INTEL_FILE = "logs/mesh_intel.json"
 
 class HellServer:
     def __init__(self):
-        os.makedirs("logs/malware", exist_ok=True)
-        os.makedirs("logs/abuse_reports", exist_ok=True)
         os.makedirs("logs/forensics", exist_ok=True)
-        self.whitelist = {MY_IP, "127.0.0.1"}
-        self.stats = {} 
+        self.stats = {}
         self.ai = predictive_ai.HellPredictiveAI()
         self.profiler = profiler_engine.HellProfiler()
-        
-        # Mesh is now strictly OPTIONAL
-        self.mesh = None
-        if mesh_node and os.getenv("ENABLE_MESH", "false").lower() == "true":
-            peers = [p.strip() for p in os.getenv("HELL_MESH_PEERS", "").split(",") if p.strip()]
-            self.mesh = mesh_node.start_mesh_service(os.getenv("HELL_NODE_ID", "NODE-01"), peers)
-            print("[📡] Mesh Network Integrated and Active.")
-        else:
-            print("[🛡️] Running in Standalone Mode (Mesh Disabled).")
+        print(f"[🛡️] HELL CORE v8.9.5: Passive Intelligence Consumer Active.")
 
-    def get_full_intel(self, ip):
+    def check_mesh_intel(self, ip, ja3=None):
+        """Consulta la base de datos de inteligencia compartida en disco"""
+        if not os.path.exists(INTEL_FILE): return False
         try:
-            r = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,city,as,isp", timeout=3).json()
-            return ip, f"{r.get('city')}, {r.get('country')}", r.get('as'), r.get('isp')
-        except: return ip, "Unknown", "Unknown", "Unknown"
-
-    def log_engagement(self, ip, port, ja3=None):
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        rdns, loc, asn, isp = self.get_full_intel(ip)
-        
-        if ip not in self.stats:
-            self.stats[ip] = {'hits': 1, 'ports': [port], 'commands': [], 'ja3': ja3, 'start_time': time.time()}
-        else:
-            self.stats[ip]['hits'] += 1
-            if port not in self.stats[ip]['ports']: self.stats[ip]['ports'].append(port)
-
-        actor_type, conf = self.profiler.classify_attacker(self.stats[ip]['commands'], ja3, self.stats[ip]['ports'])
-
-        report = (
-            f"\n[+] ULTIMATE DECEPTION TRIGGERED: {timestamp}\n"
-            f"----------------------------------------\n"
-            f"IP: {ip} ({rdns})\n"
-            f"Origin: {loc} | Actor Profile: {actor_type} ({conf}%)\n"
-            f"Network: {isp} ({asn})\n"
-            f"Target Port: {port} | Hits: {self.stats[ip]['hits']}\n"
-            f"----------------------------------------\n"
-        )
-        with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
+            with open(INTEL_FILE, 'r') as f:
+                intel = json.load(f)
+                if ip in intel.get("blacklist_ips", {}): return True
+                if ja3 and ja3 in intel.get("blacklist_ja3", {}): return True
+        except: pass
+        return False
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
-        if ip in self.whitelist:
-            client_socket.close(); return
-
+        # 1. Peek para JA3
         ja3_hash = None
         if local_port in [443, 8443]:
-            try:
-                peek_data = client_socket.recv(1024, socket.MSG_PEEK)
-                ja3_hash = ja3_engine.get_ja3_hash(peek_data)
+            try: ja3_hash = ja3_engine.get_ja3_hash(client_socket.recv(1024, socket.MSG_PEEK))
             except: pass
 
-        threading.Thread(target=self.log_engagement, args=(ip, local_port, ja3_hash)).start()
+        # 2. Check de Inmunidad (Mesh Externo)
+        if self.check_mesh_intel(ip, ja3_hash):
+            print(f"[📡] MESH-HIT: Destrucción inmediata para {ip}")
+            if local_port in [22, 2222]: shell_emulator.terminal_crusher(client_socket)
+            else: zip_generator.serve_zip_trap(client_socket)
+            return
 
+        # 3. Lógica de Combate Estándar
         try:
             client_socket.settimeout(10.0)
             data = b""; req_str = ""
@@ -98,7 +56,6 @@ class HellServer:
                 req_str = data.decode('utf-8', errors='ignore')
             except: pass
 
-            # Decision Logic
             if local_port in [445, 4455]:
                 smb_lethal.handle_smb_session(client_socket, ip)
                 return
@@ -112,6 +69,7 @@ class HellServer:
                 database_emulator.handle_mysql_trap(client_socket)
                 return
 
+            # Tarpit genérico
             while True:
                 client_socket.send(b"\x00")
                 time.sleep(30)
@@ -135,7 +93,7 @@ class HellServer:
         signal.signal(signal.SIGINT, lambda s, f: sys.exit(0))
         for port in PORTS:
             threading.Thread(target=lambda p=port: self.start_listener(p), daemon=True).start()
-        print(f"[✅] HELL CORE v8.9.4 Operational.")
+        print(f"[✅] HELL CORE v8.9.5 Operational on {len(PORTS)} ports.")
         while True: time.sleep(1)
 
 if __name__ == "__main__":

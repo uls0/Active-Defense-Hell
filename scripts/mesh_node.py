@@ -1,82 +1,47 @@
 import socket
-import threading
 import json
 import time
 import os
 
-try:
-    import psutil
-except ImportError:
-    psutil = None
+# CONFIGURACIÓN DEL NODO MESH EXTERNO
+PORT = 9999
+INTEL_FILE = "logs/mesh_intel.json"
+NODE_ID = os.getenv("HELL_NODE_ID", "EXTERNAL-NODE-01")
+PEERS = [p.strip() for p in os.getenv("HELL_MESH_PEERS", "").split(",") if p.strip()]
 
-class HellMeshNode:
-    def __init__(self, node_id, port=9999, peers=None):
-        self.node_id = node_id
-        self.port = port
-        self.peers = peers or []
-        self.intel_file = "logs/mesh_intel.json"
-        self.shared_intel = self.load_intel()
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.load_avg = 0
+def listen_and_sync():
+    os.makedirs("logs", exist_ok=True)
+    if not os.path.exists(INTEL_FILE):
+        with open(INTEL_FILE, 'w') as f: json.dump({"blacklist_ips": {}, "blacklist_ja3": {}}, f)
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.bind(('0.0.0.0', PORT))
+        print(f"[🌐] MESH INTELLIGENCE COLLECTOR ACTIVE ON PORT {PORT}")
+        print(f"[📡] Connected Peers: {PEERS}")
         
-    def load_intel(self):
-        os.makedirs("logs", exist_ok=True)
-        if os.path.exists(self.intel_file):
-            with open(self.intel_file, 'r') as f:
-                try: return json.load(f)
-                except: pass
-        return {"blacklist_ips": {}, "blacklist_ja3": {}, "peers_load": {}}
-
-    def save_intel(self):
-        with open(self.intel_file, 'w') as f:
-            json.dump(self.shared_intel, f, indent=4)
-
-    def broadcast_threat(self, target, level, details, target_type="IP"):
-        message = {
-            "node_origin": self.node_id,
-            "type": "THREAT_ALERT",
-            "target": target,
-            "target_type": target_type,
-            "level": level,
-            "details": details,
-            "timestamp": time.time()
-        }
-        data = json.dumps(message).encode()
-        for peer in self.peers:
-            try: self.sock.sendto(data, (peer, self.port))
-            except: pass
-
-    def listen_for_peers(self):
-        try:
-            self.sock.bind(('0.0.0.0', self.port))
-            print(f"[🌐] MESH NODE ACTIVE on port {self.port}. Listening for peers...")
-            while True:
-                data, addr = self.sock.recvfrom(4096)
-                msg = json.loads(data.decode())
-                if msg["type"] == "THREAT_ALERT":
-                    target = msg["target"]
-                    list_key = "blacklist_ips" if msg["target_type"] == "IP" else "blacklist_ja3"
-                    self.shared_intel[list_key][target] = {
+        while True:
+            data, addr = sock.recvfrom(4096)
+            msg = json.loads(data.decode())
+            
+            if msg["type"] == "THREAT_ALERT":
+                target = msg["target"]
+                t_type = "blacklist_ips" if msg["target_type"] == "IP" else "blacklist_ja3"
+                
+                # Cargar, actualizar y guardar
+                with open(INTEL_FILE, 'r+') as f:
+                    intel = json.load(f)
+                    intel[t_type][target] = {
                         "level": msg["level"],
                         "origin": msg["node_origin"],
-                        "expires": msg["timestamp"] + 86400
+                        "timestamp": msg["timestamp"]
                     }
-                    self.save_intel()
-                    print(f"[💉] Mesh Intel: Synced {msg['target_type']} {target}")
-        except Exception as e:
-            print(f"[!] Mesh Listener Error: {e}")
-
-def start_mesh_service(node_id="NODE-01", peers=None):
-    """Entry point to start the Mesh as a background thread if called from core"""
-    node = HellMeshNode(node_id, peers=peers)
-    t = threading.Thread(target=node.listen_for_peers, daemon=True)
-    t.start()
-    return node
+                    f.seek(0)
+                    json.dump(intel, f, indent=4)
+                    f.truncate()
+                print(f"[💉] Intelligence Synced: {msg['target_type']} {target} from {msg['node_origin']}")
+    except Exception as e:
+        print(f"[!] Mesh Collector Error: {e}")
 
 if __name__ == "__main__":
-    # If run directly as an external module
-    NODE_ID = os.getenv("HELL_NODE_ID", "EXTERNAL-NODE")
-    PEERS = os.getenv("HELL_MESH_PEERS", "").split(",")
-    peers = [p.strip() for p in PEERS if p.strip()]
-    node = HellMeshNode(NODE_ID, peers=peers)
-    node.listen_for_peers()
+    listen_and_sync()

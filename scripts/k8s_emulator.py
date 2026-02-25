@@ -28,11 +28,11 @@ def handle_k8s_request(path):
 def serve_backup_trap(client_socket):
     """Sirve un falso respaldo de DB mediante Drip-Feed"""
     print("[🍯] Atacante mordió el anzuelo en /home/Desktop/backup_DB")
-    header = "HTTP/1.1 200 OK
+    header = """HTTP/1.1 200 OK
 Content-Type: application/octet-stream
 Content-Disposition: attachment; filename="backup_prod_2026.sql.gz"
 
-"
+"""
     client_socket.send(header.encode())
     
     # Enviar 1GB de datos goteando

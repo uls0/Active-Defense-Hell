@@ -11,9 +11,9 @@ import json
 import zlib
 from datetime import datetime
 from threat_intel import VirusTotalReporter, IsMaliciousReporter
-from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator
+from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, ja3_engine
 
-# CONFIGURACIÓN HELL v6.6.0: SLIPZIP DECEPTION (PATH TRAVERSAL)
+# CONFIGURACIÓN HELL v6.7.0: JA3 FINGERPRINTING & TLS PEERING
 HOST = '0.0.0.0'
 WEB_PORTS = [80, 443, 8080, 8081, 8082, 8090, 8443, 9200]
 LETHAL_PORTS = [22, 2222, 3389, 4455]
@@ -31,12 +31,14 @@ class HellServer:
     def __init__(self):
         os.makedirs("logs", exist_ok=True)
         self.whitelist = {MY_IP, "127.0.0.1"}
-        print(f"HELL CORE v6.6.0: SlipZip Traversal Trap Active.")
+        print(f"HELL CORE v6.7.0: JA3 Fingerprinting Engine ready.")
 
-    def log_event(self, ip, local_port, status="START", intel=None, duration=0):
+    def log_event(self, ip, local_port, status="START", ja3=None, duration=0):
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         if status == "START":
-            log_entry = f"\n[+] SLIPZIP TARGET ENGAGED: {timestamp} | IP: {ip} | Port: {local_port}\n"
+            tool = ja3_engine.identify_client(ja3) if ja3 else "N/A"
+            ja3_str = f" | JA3: {ja3} ({tool})" if ja3 else ""
+            log_entry = f"\n[+] EVASION TARGET DETECTED: {timestamp} | IP: {ip} | Port: {local_port}{ja3_str}\n"
         else:
             log_entry = f"[-] NEUTRALIZED: {timestamp} | Time: {round(duration, 2)}s | Mode: {status}\n"
         with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(log_entry)
@@ -47,33 +49,36 @@ class HellServer:
             client_socket.close(); return
 
         start_time = time.time()
-        self.log_event(ip, local_port, status="START")
         final_mode = "Mitigation"
+        ja3_hash = None
 
         try:
-            client_socket.settimeout(10.0)
+            client_socket.settimeout(5.0)
+            # Peek para JA3 si es un puerto TLS
+            if local_port in [443, 8443, 6443]:
+                initial_data = client_socket.recv(1024, socket.MSG_PEEK)
+                ja3_hash = ja3_engine.get_ja3_hash(initial_data)
+
+            self.log_event(ip, local_port, status="START", ja3=ja3_hash)
+
+            # --- LÓGICA DE MÓDULOS ---
             data = client_socket.recv(1024)
             req_str = data.decode('utf-8', errors='ignore')
 
-            # --- PASO 7: SLIPZIP TRAP (Web/K8s Path) ---
-            if "/backup" in req_str or ".zip" in req_str or "/secrets" in req_str:
-                final_mode = "SlipZip Path Traversal"
+            if "/backup" in req_str or ".zip" in req_str:
                 zip_generator.serve_zip_trap(client_socket)
                 return
 
-            # --- OTROS MÓDULOS ---
             if local_port in SCADA_PORTS:
                 final_mode = "SCADA Deception"
                 scada_emulator.scada_tarpit(client_socket)
-            elif local_port in K8S_PORTS:
-                final_mode = "Honey-Kube"
-                client_socket.send(b"HTTP/1.1 200 OK\r\n\r\n")
-                while True: client_socket.send(b"\x00"); time.sleep(30)
             elif local_port in [22, 2222]:
-                final_mode = "Mainframe Shell Poison"
                 shell_emulator.handle_mainframe_shell(client_socket, ip)
             else:
-                while True: client_socket.send(os.urandom(1024)); time.sleep(10)
+                # Infinite Tarpit
+                while True:
+                    client_socket.send(b"\x00")
+                    time.sleep(30)
 
         except: pass
         finally:

@@ -2,115 +2,59 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Documentación Técnica - Proyecto HELL v4.0.0 Enterprise Gold</title>
+    <title>Manual Técnico - Proyecto HELL v5.0.0 Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
-        .code-block { background-color: #020617; color: #38bdf8; padding: 1.5rem; border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; border-left: 4px solid #ef4444; }
-        .section-header { border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1.5rem; font-weight: 900; letter-spacing: -0.025em; }
+        body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        .card { background-color: #1e293b; border: 1px solid #334155; padding: 2rem; border-radius: 1rem; }
+        .highlight { color: #f43f5e; font-weight: bold; }
+        .code-block { background-color: #000; color: #10b981; padding: 1rem; border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; border-left: 4px solid #f43f5e; }
     </style>
 </head>
-<body class="p-6 md:p-16 border-t-[12px] border-red-600">
-    <div class="max-w-6xl mx-auto bg-white p-8 md:p-16 shadow-2xl rounded-2xl">
-        
-        <header class="mb-16 border-b-8 border-black pb-8">
-            <h1 class="text-6xl font-black text-black tracking-tighter italic">HELL v4.0.0 ENTERPRISE</h1>
-            <p class="text-2xl text-red-600 mt-2 font-bold uppercase tracking-widest">Active Defense & Enterprise Deception Platform</p>
+<body class="p-6 md:p-20">
+    <div class="max-w-6xl mx-auto space-y-12">
+        <header class="text-center border-b border-slate-700 pb-10">
+            <h1 class="text-7xl font-black tracking-tighter text-white italic">HELL <span class="text-rose-600">v5.0.0</span></h1>
+            <p class="text-2xl text-slate-400 mt-4 uppercase tracking-[0.3em]">Ultimate Intelligence & Defense</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            
-            <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-12">
-                
-                <section>
-                    <h2 class="text-3xl section-header uppercase">01. Simulación de Identidad Corporativa</h2>
-                    <p class="text-gray-700 leading-relaxed mb-6">
-                        HELL v4.0.0 emula un entorno de infraestructura crítica mexicana (MEX-AD-CORP). El sistema proyecta la identidad de un Controlador de Dominio de alta disponibilidad, atrayendo ataques dirigidos contra el sector financiero e industrial.
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 text-sm font-bold">
-                        <div class="bg-gray-100 p-4 border-l-4 border-black">LDAP/S (389/636)</div>
-                        <div class="bg-gray-100 p-4 border-l-4 border-black">KERBEROS (88)</div>
-                        <div class="bg-gray-100 p-4 border-l-4 border-black">RPC/WINRM (135/5985)</div>
-                        <div class="bg-gray-100 p-4 border-l-4 border-black">GLOBAL CATALOG (3268)</div>
-                    </div>
-                </section>
-
-                <section>
-                    <h2 class="text-3xl section-header uppercase">02. Módulo Lethal SMB (Port 445)</h2>
-                    <p class="text-gray-700 leading-relaxed mb-4">
-                        El puerto 445 utiliza el submódulo <code>smb_lethal.py</code> para ejecutar contramedidas binarias:
-                    </p>
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded mr-3 text-xs">CRITICAL</span>
-                            <div>
-                                <p class="font-bold">Compression Bomb (The Crusher)</p>
-                                <p class="text-sm text-gray-600">Aprovecha la descompresión del protocolo SMB 3.1.1 para saturar la RAM del atacante.</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded mr-3 text-xs">PERSISTENT</span>
-                            <div>
-                                <p class="font-bold">Infinite Share Maze</p>
-                                <p class="text-sm text-gray-600">Generación recursiva de rutas falsas para atrapar scripts de enumeración.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h2 class="text-3xl section-header uppercase">03. Trampas de Inteligencia Artificial</h2>
-                    <p class="text-gray-700 leading-relaxed mb-6">
-                        Protección activa contra bots de robo de modelos y secuestro de inferencia local.
-                    </p>
-                    <div class="code-block text-xs">
-                        [LISTENER] Port 11434 (Ollama) -> Serving Fake Llama3 Weights (Stream)...<br>
-                        [LISTENER] Port 8188 (ComfyUI) -> Injecting WASM CPU Exhauster...<br>
-                        [LISTENER] Port 1234 (LM Studio) -> Connection Locked via Zero-Window.
-                    </div>
-                </section>
-
-            </div>
-
-            <!-- Sidebar / Telemetry -->
-            <div class="space-y-8">
-                <div class="bg-black text-white p-8 rounded-xl shadow-xl">
-                    <h3 class="text-xl font-black mb-4 italic uppercase">Métricas de Ataque</h3>
-                    <div class="space-y-4 text-sm">
-                        <div class="flex justify-between border-b border-gray-800 pb-2">
-                            <span>Puertos Activos:</span>
-                            <span class="text-red-500 font-mono">142+</span>
-                        </div>
-                        <div class="flex justify-between border-b border-gray-800 pb-2">
-                            <span>Modo Defensa:</span>
-                            <span class="text-red-500 font-mono text-right">SATURATION_GOLD</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Respuesta SMB:</span>
-                            <span class="text-red-500 font-mono">LETHAL_BOMB</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-red-600 text-white p-8 rounded-xl shadow-xl">
-                    <h3 class="text-xl font-black mb-4 italic uppercase">Banners Activos</h3>
-                    <p class="text-xs font-bold opacity-80 mb-4">IDENTIDAD MEXICANA</p>
-                    <ul class="text-xs space-y-2 font-mono">
-                        <li>- BANXICO (SSH)</li>
-                        <li>- PEMEX (FTP)</li>
-                        <li>- HACIENDA (SMTP)</li>
-                        <li>- BIMBO (MySQL)</li>
-                    </ul>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4 text-rose-500">ACUMULADOR DE DAÑO</h2>
+                <p class="text-slate-300">HELL v5.0.0 mantiene una base de datos en memoria que rastrea el impacto histórico de cada IP atacante.</p>
+                <div class="mt-4 space-y-2 text-sm">
+                    <p>• <strong>Total Time Held:</strong> Segundos totales de vida perdidos por el bot.</p>
+                    <p>• <strong>Total Data:</strong> MB totales de basura inyectada acumulados.</p>
                 </div>
             </div>
-
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4 text-rose-500">FORENSE PROFUNDO</h2>
+                <p class="text-slate-300">Identificación automática de la infraestructura del atacante mediante perfiles de conexión.</p>
+                <div class="mt-4 space-y-2 text-sm text-emerald-400">
+                    <p>• [DATACENTER] - Ataques desde la nube (AWS, DigitalOcean).</p>
+                    <p>• [VPN/PROXY] - Atacantes ocultando su origen real.</p>
+                    <p>• [RESIDENTIAL] - Botnets de dispositivos domésticos / IoT.</p>
+                </div>
+            </div>
         </div>
 
-        <footer class="mt-20 pt-8 border-t-2 border-black flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-widest">
-            <div>PROYECTO HELL &copy; 2026</div>
-            <div>Ulises Guzman & Gemini CLI</div>
-            <div>Build: 4.0.0-GOLD-MEX</div>
+        <section class="card">
+            <h2 class="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">EJEMPLO DE TELEMETRÍA ULTIMATE</h2>
+            <div class="code-block text-sm leading-relaxed">
+                [+] ULTIMATE DECEPTION TRIGGERED: 2026-02-25 02:00:00<br>
+                ----------------------------------------<br>
+                IP: 14.236.186.39 (static.vnpt.vn)<br>
+                Origin: Hanoi, Vietnam | Profile: RESIDENTIAL<br>
+                Network: VNPT Corp (AS45899)<br>
+                Classification: SMB Worm / Lateral Movement<br>
+                Target Port: 445 | Hit Count: 482<br><br>
+                [-] THREAT NEUTRALIZED: 2026-02-25 02:20:00<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;└─ TOTAL DAMAGE: Time Lost: 12450s | Data: 184MB
+            </div>
+        </section>
+
+        <footer class="text-center text-slate-500 font-bold text-xs uppercase tracking-widest pt-10">
+            Designed by ULSO+GCLI | Build 2026.02.25
         </footer>
     </div>
 </body>

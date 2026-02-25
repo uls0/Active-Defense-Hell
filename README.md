@@ -1,42 +1,34 @@
 # HELL: Honeypot Exploitation & Lethal Logging
-## Enterprise Deception Infrastructure & Autonomous Counter-Offensive System
+## Ultimate Active Defense & Intelligence Infrastructure
 
-HELL v4.0.0+ is an aggressive active defense ecosystem designed to simulate high-value corporate infrastructure, specifically targeting state-sponsored actors, ransomware operators, and automated AI-theft bots.
+HELL v5.0.0 is the definitive version of the autonomous counter-offensive system. It combines deep protocol deception with a permanent intelligence engine that tracks and accumulates damage against adversarial actors.
 
-### Core Architecture: Enterprise Deception (v4.0.0-Gold)
+### Ultimate Specifications (v5.0.0-Gold)
 
-- **Active Directory Simulation (MEX-AD-CORP):**
-    - **Identity Decoy:** Full emulation of a Mexican Domain Controller (Ports 53, 88, 135, 389, 636, 3268, 5985).
-    - **Protocol Fuzzing:** Real-time binary garbage injection into LDAP and Kerberos parsers to destabilize offensive tools like BloodHound or Impacket.
-    - **Honey-SYSVOL:** Virtual file tree containing toxic .xml and .ini files with embedded beacons.
+- **Permanent Threat Tracking:**
+    - **Damage Accumulator:** Persistent tracking of every IP address. Logs show the *Total Life Loss* (time wasted) and *Total Garbage Injected* across all sessions.
+    - **Bot Classification:** Real-time identification of threat types (AI Thief, AD Crawler, Ransomware Bot, etc.).
+- **Deep Forensics & Fingerprinting:**
+    - **ISP & ASN Mapping:** Automatic identification of the attacker's network provider and infrastructure type (DataCenter, VPN, Proxy, or Residential).
+    - **Reverse DNS Lookup:** Resolves hostnames to uncover hidden infrastructure.
+- **Advanced Anchoring (The Sticky Trap):**
+    - **Drip-Feed delivery:** Data is served byte-by-byte with randomized delays to keep bot timeouts from triggering.
+    - **Heartbeat Keep-Alive:** Injects invisible traffic to maintain connection persistence for hours.
+- **Enterprise Deception Suite:**
+    - **MEX-AD-CORP:** Full simulation of a Mexican Active Directory environment.
+    - **Lethal SMB Submodule:** Compression bombs and infinite share mazes.
+    - **AI Protection:** Zlib bombs for Ollama, ComfyUI, and LM Studio.
 
-- **SMB Lethal Submodule (Port 445):**
-    - **Compression Bomb:** Exploits SMB 3.1.1 compression headers to force Out-Of-Memory (OOM) crashes on the attacker's system.
-    - **Infinite Share Maze:** Recursive generation of attractive directory structures to trap automated crawlers.
-    - **NTLM Blackhole:** Captures authentication attempts and kidnaps execution threads via ultra-low-velocity drip-feeding.
+### Operational Metrics
 
-- **AI & LLM Protection Suite:**
-    - **Model Thief Traps:** Specialized decoys for Ollama (11434), ComfyUI (8188), and LM Studio (1234).
-    - **Fake Weight Streams:** Simulates massive model downloads while inyecting entropy-heavy data to saturate attacker storage and processing power.
-
-- **Modern Vulnerability Emulation:**
-    - **Edge Gateway Decoys:** Simulated Fortinet FortiOS (10443) and Roundcube Webmail interfaces to intercept botnets targeting 2026-critical CVEs.
-
-- **Network Engineering & Persistence:**
-    - **Port-Hopping Killswitch:** Detects sequential scanning patterns and neutralizes the scanner with malformed TCP segments.
-    - **TCP Zero-Window Tarpit:** Freezes the attacker's network stack at Layer 4.
-    - **Sticky Headers & Clamped Delivery:** Overloads parsers and fragments payloads into 2-byte segments.
-
-### Operational Logs & Forensics
-
-HELL provides professional-grade telemetry for every neutralized threat:
-- **Origin Country Identification:** Automatic geolocation of adversarial IPs.
-- **Scanner Signature Detection:** Identification of Nmap, ZGrab, Masscan, and custom botnets.
-- **Impact Metrics:** Precise tracking of persistence duration and total data injected into the attacker's system.
+The system now logs:
+1. **Connection Profile:** Detects if the attacker is hiding behind a Proxy or attacking from a professional Hosting service.
+2. **Persistence Duration:** Real-time and cumulative time the attacker has been trapped.
+3. **Data Impact:** Volume of null-data and logic bombs successfully processed by the attacker.
 
 ### Security Disclaimer
-This system is strictly for defensive research and infrastructure protection. Deployment should adhere to local legal frameworks and corporate security policies.
+This system is strictly for defensive research. Operation should comply with local legal frameworks.
 
 ---
 **Designed by ULSO+GCLI**
-**Version 4.0.3-GOLD**
+**Version 5.0.0-ULTIMATE**

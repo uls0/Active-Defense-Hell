@@ -19,8 +19,14 @@ def parse_logs():
     if not os.path.exists(LOG_FILE): return stats
     
     try:
-        with open(LOG_FILE, "r", encoding='utf-8', errors='ignore') as f:
-            content = f.read()
+        # Solo leemos las últimas 5000 líneas para no matar el CPU
+        with open(LOG_FILE, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            filesize = f.tell()
+            # Leer aproximadamente los últimos 500KB del log
+            offset = max(0, filesize - 500000)
+            f.seek(offset)
+            content = f.read().decode('utf-8', errors='ignore')
             
             # Extraer daño total (Injected MB)
             data_matches = re.findall(r"Data: ([\d.]+)MB", content)

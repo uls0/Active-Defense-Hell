@@ -28,6 +28,12 @@ fi
 echo -e "\n[*] Forensic Pulse (Last 10 lines):"
 [ -f logs/hell_activity.log ] && tail -n 10 logs/hell_activity.log || echo "  [!] Log file not found."
 
+echo -e "\n[*] Lethal Engagement Monitor (Top Connections):"
+ss -tnp | grep python3 | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -nr | head -n 10 || echo "  [!] No active engagements."
+
+echo -e "\n[*] Resource Culprit (Top Threads):"
+ps -eo pid,ppid,pcpu,pmem,comm,args --sort=-pcpu | grep python | head -n 3
+
 echo -e "\n[*] Infrastructure Load:"
 uptime | awk '{print "  Load Average: " $10 $11 $12}'
 echo "============================================================"

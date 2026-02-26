@@ -7,9 +7,10 @@ import json
 import random
 import requests
 import signal
+import psutil
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit, threat_intel
 
-VERSION = "v10.7.0-SINGULARITY-ELITE"
+VERSION = "v10.9.5-SINGULARITY-STABLE"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
 # Puertos base + Rango Tarpit 20000-20100
@@ -27,9 +28,24 @@ class HellServer:
         os.makedirs("logs/abuse_reports", exist_ok=True)
         os.makedirs("logs/intel_reports", exist_ok=True)
         self.stats = {}
+        self.cpu_overload = False
         self.ai = predictive_ai.HellPredictiveAI()
         self.profiler = profiler_engine.HellProfiler()
         threading.Thread(target=self_healing.health_monitor_loop, daemon=True).start()
+
+    def check_system_health(self):
+        """Monitorea el uso de CPU para evitar el colapso del servidor"""
+        while True:
+            cpu_usage = psutil.cpu_percent(interval=5)
+            if cpu_usage > 85:
+                if not self.cpu_overload:
+                    print(f"[🚨] CPU OVERLOAD DETECTED ({cpu_usage}%). Entering Power-Saving Deception.")
+                    self.cpu_overload = True
+            else:
+                if self.cpu_overload:
+                    print(f"[✅] CPU Stabilized ({cpu_usage}%). Full Arsenal Restored.")
+                    self.cpu_overload = False
+            time.sleep(10)
 
     def get_full_intel(self, ip):
         try:
@@ -99,8 +115,12 @@ class HellServer:
                 return
 
             if local_port == 22:
-                shell_emulator.handle_cowrie_trap(client_socket, ip)
-                total_bytes = 4 * 1024 * 1024; final_mode = "SSH-GigaBomb"
+                if self.cpu_overload:
+                    advanced_tarpit.handle_advanced_tarpit(client_socket, ip, local_port)
+                    final_mode = "CPU-Save-Tarpit"
+                else:
+                    shell_emulator.handle_cowrie_trap(client_socket, ip)
+                    total_bytes = 4 * 1024 * 1024; final_mode = "SSH-GigaBomb"
                 return
 
             if local_port in [445, 4455]:
@@ -151,6 +171,7 @@ class HellServer:
         except: pass
 
     def start(self):
+        threading.Thread(target=self.check_system_health, daemon=True).start()
         for port in PORTS: 
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
             time.sleep(0.01) # Pequeño delay para estabilizar el kernel

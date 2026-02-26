@@ -1,7 +1,7 @@
-import socket
+import os
 import threading
 import time
-import os
+import socket
 import sys
 import json
 import random
@@ -10,11 +10,11 @@ import signal
 import psutil
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit, threat_intel
 
-VERSION = "v11.5-SINGULARITY-HYDRA"
+VERSION = "v12.0-AETERNUM-CRYPT"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
-# Puertos base + Rango Tarpit 20000-20100
-PORTS = [22, 80, 443, 445, 88, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200, 33001, 1338]
+# Puertos base + Rango Tarpit + Crypto Ports (8545, 3333, 18080)
+PORTS = [22, 80, 443, 445, 88, 179, 389, 502, 1433, 2222, 3306, 3389, 4455, 8080, 8443, 9200, 33001, 1338, 8545, 3333, 18080]
 PORTS.extend(range(20000, 20101))
 
 MY_PUBLIC_IP = os.getenv("MY_IP", "127.0.0.1")
@@ -102,6 +102,17 @@ class HellServer:
 
         try:
             client_socket.settimeout(15.0)
+            
+            # Para puertos HTTP (80, 443), servimos la interfaz ASIC
+            if local_port in [80, 443]:
+                response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+                try:
+                    with open("templates/miner.html", "r", encoding='utf-8') as f:
+                        response += f.read()
+                except: response += "<html><body>Whatsminer S22 Admin</body></html>"
+                client_socket.send(response.encode())
+                client_socket.close(); return
+
             data = client_socket.recv(8192)
             req_str = data.decode('utf-8', errors='ignore')
 
@@ -114,25 +125,23 @@ class HellServer:
 
             # --- ROUTING ---
             if "/tracking/beacon.png" in req_str: return
-            if "GET /nomina" in req_str:
-                canary_generator.serve_canary_file(client_socket, MY_PUBLIC_IP, f"NOMINA_{ip}.pdf")
-                return
-
+            
             if local_port == 22:
                 if self.cpu_overload:
                     advanced_tarpit.handle_advanced_tarpit(client_socket, ip, local_port)
                     final_mode = "CPU-Save-Tarpit"
                 else:
                     shell_emulator.handle_cowrie_trap(client_socket, ip)
-                    total_bytes = 4 * 1024 * 1024; final_mode = "SSH-GigaBomb"
+                    # El contador de bytes para bombas Fifield es simbólico
+                    total_bytes = 42 * 1024 * 10; final_mode = "TITAN-Fifield-Burst"
                 return
 
             if local_port in [445, 4455]:
                 total_bytes = smb_lethal.handle_smb_session(client_socket, ip)
-                final_mode = "SMB-Stealth-Bolt"
+                final_mode = "HYDRA-GORGON-SMB"
                 return
 
-            if 20000 <= local_port <= 20100:
+            if 20000 <= local_port <= 20100 or local_port in [8545, 3333, 18080]:
                 advanced_tarpit.handle_advanced_tarpit(client_socket, ip, local_port)
                 final_mode = "Improved-Tarpit"
                 return
@@ -144,21 +153,29 @@ class HellServer:
         finally:
             duration = time.time() - start_time
             mb = round(total_bytes / (1024*1024), 4)
+            
+            # Punto 4: Análisis de Muerte Silenciosa (TCP State Analysis)
+            closure_reason = "CLEAN_EXIT"
+            try:
+                client_socket.recv(1, socket.MSG_PEEK)
+            except socket.timeout: closure_reason = "SILENT_DEATH (Timeout/Freeze)"
+            except ConnectionResetError: closure_reason = "HOST_COLLAPSE (RST Received)"
+            except: closure_reason = "GHOST_DISCONNECT"
+
             if ip in self.stats:
                 self.stats[ip]['total_time'] += duration
                 self.stats[ip]['total_data'] += mb
                 
                 report = f"\n[-] THREAT NEUTRALIZED: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
                 report += f"    └─ TOTAL DAMAGE: Time Lost: {round(self.stats[ip]['total_time'], 2)}s | Data: {round(self.stats[ip]['total_data'], 2)}MB\n"
+                report += f"    └─ CLOSURE STATE: {closure_reason}\n"
                 report += f"----------------------------------------\n"
                 
                 with open(LOG_FILE, "a", encoding='utf-8') as f: f.write(report)
                 
                 # --- DISPARADORES AUTOMÁTICOS ---
                 if duration > 120 or mb > 5:
-                    # Reporte de Abuso
                     threading.Thread(target=abuse_generator.generate_formal_report, args=(ip, self.stats[ip]['asn'], self.stats[ip]['loc'], None, duration, mb), daemon=True).start()
-                    # Paquete Forense
                     threading.Thread(target=forensics_engine.create_evidence_pack, args=(ip, time.time()), daemon=True).start()
             client_socket.close()
 

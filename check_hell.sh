@@ -8,7 +8,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}" | grep hell
 
 echo -e "\n[*] Network Deception Listeners:"
 # Puertos base
-for port in 22 80 443 445 88 179 389 502 1433 2222 3306 3389 4455 8080 8443 8888 33001 1338; do
+for port in 22 80 443 445 88 179 389 502 1433 2222 3306 3389 4455 8080 8443 8888 33001 1338 8545 3333 18080; do
     ss -tuln | grep ":$port " > /dev/null
     if [ $? -eq 0 ]; then
         echo -e "  [✅] Port $port: ACTIVE"

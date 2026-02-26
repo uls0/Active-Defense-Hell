@@ -105,7 +105,7 @@ class HellServer:
 
             if local_port in [445, 4455]:
                 total_bytes = smb_lethal.handle_smb_session(client_socket, ip)
-                final_mode = "AD-Maze"
+                final_mode = "SMB-Stealth-Bolt"
                 return
 
             if 20000 <= local_port <= 20100:

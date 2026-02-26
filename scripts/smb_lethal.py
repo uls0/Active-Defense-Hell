@@ -3,17 +3,28 @@ import time
 import random
 import binascii
 
+from scripts import zip_generator
+
 def smb_infinite_maze(client_socket, tracker):
-    """Laberinto infinito que ahora incluye señuelos de archivos"""
+    """Laberinto infinito que entrega una Stealth Bolt de 1 Mb por cada señuelo."""
     header = binascii.unhexlify("fe534d4240000000000000000000000000000000000000000000000000000000")
     try:
+        # Generar el payload una vez para eficiencia
+        bolt_payload = zip_generator.generate_stealth_bolt()
+        
         while True:
-            # Simulamos una lista de archivos atractivos
-            fake_files = [b"NOMINA_EJECUTIVA.pdf", b"ACCESOS_AWS.txt", b"BACKUP_DB.sql.gz", b"MENSAJES_PROD.docx"]
-            payload = header + random.choice(fake_files) + b"\\" + os.urandom(32)
+            fake_files = [b"NOMINA_EJECUTIVA.zip", b"ACCESOS_AWS.key.zip", b"BACKUP_DB_PROD.sql.zip", b"PASSWORDS_MONEX.txt.zip"]
+            
+            # Simulamos el envío del 'archivo'
+            # Enviamos el header de SMB seguido de la Stealth Bolt de 1 Mb
+            payload = header + random.choice(fake_files) + b" :: " + bolt_payload
             client_socket.send(payload)
+            
             tracker['bytes'] += len(payload)
-            time.sleep(0.5)
+            print(f"[💀] SMB STEALTH BOLT (1 Mb) DEPLOYED via {random.choice(fake_files).decode()}")
+            
+            # Pausa para simular latencia de red real y maximizar retención
+            time.sleep(random.uniform(2, 5))
     except: pass
 
 def handle_smb_session(client_socket, ip):

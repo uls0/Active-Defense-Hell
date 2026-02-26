@@ -10,7 +10,7 @@ import signal
 import psutil
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit, threat_intel
 
-VERSION = "v10.9.5-SINGULARITY-STABLE"
+VERSION = "v11.5-SINGULARITY-HYDRA"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
 # Puertos base + Rango Tarpit 20000-20100
@@ -27,6 +27,10 @@ class HellServer:
         os.makedirs("logs/malware", exist_ok=True)
         os.makedirs("logs/abuse_reports", exist_ok=True)
         os.makedirs("logs/intel_reports", exist_ok=True)
+        
+        # Inicializar arsenal TITAN en segundo plano para no bloquear los puertos
+        threading.Thread(target=zip_generator.precompute_bombs, daemon=True).start()
+        
         self.stats = {}
         self.cpu_overload = False
         self.ai = predictive_ai.HellPredictiveAI()

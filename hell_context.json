@@ -1,6 +1,6 @@
 {
   "project_name": "HELL (Active Defense Honeypot)",
-  "version": "2.3.0",
+  "version": "10.6.0-SINGULARITY",
   "root_path": "C:/Users/UlisesGuzman/Documents/Proyectos/Gemini/Proyectos_Activos/HELL",
   "repository": "https://github.com/uls0/Active-Defense-Hell.git",
   "core_files": {
@@ -15,11 +15,12 @@
     "assets": "assets/",
     "scripts": "scripts/"
   },
-  "active_ports": [80, 443, 8080, 8081, 8082, 8090, 8443, 9200, 2222, 3389, 4455, 23, 445, 1433, 2323, 2525, 3306, 6379, 1337, 2375, 8125, 5060, 5900, 110, 5555],
+  "active_ports": [80, 443, 8080, 8081, 8082, 8090, 8443, 9200, 2222, 3389, 4455, 23, 445, 1433, 2323, 2525, 3306, 6379, 1337, 2375, 8125, 5060, 5900, 110, 5555, 33001, 1338],
   "defense_modes": {
     "web": "JS BOMB / Gzip Bomb (10GB)",
     "lethal": "TCP Fatigue (1ms bytes)",
-    "raw": "Basura aleatoria (Flood 🌊)"
+    "raw": "Basura aleatoria (Flood 🌊)",
+    "singularity": "Overlapping Zip Bomb (4.5 PB)"
   },
-  "last_update": "2026-02-24"
+  "last_update": "2026-02-25"
 }

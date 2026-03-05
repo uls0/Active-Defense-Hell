@@ -1,0 +1,29 @@
+REPORTE DE MUESTRAS MALWARE SELECCIONADAS - PROYECTO HELL
+FECHA: 04 DE MARZO DE 2026
+----------------------------------------------------------
+
+1. VECTOR: EXPLOIT ROUTER GPON (CVE-2018-10561)
+   - sample_102.212.40.115_1772216544.bin
+   - sample_223.123.38.38_1772444589.bin
+   - sample_61.3.19.116_1772370184.bin
+   (Nota: Intentan inyectar Mozi botnet via /GponForm/diag_Form)
+
+2. VECTOR: COMMAND INJECTION / WGET LOADERS (Botnets P2P)
+   - sample_143.110.248.64_1772065563.bin
+   - sample_193.142.146.230_1772367351.bin
+   - sample_45.135.194.43_1772276561.bin
+   - sample_31.58.137.200_1772124311.bin
+   (Nota: Usan wget/curl para descargar binarios ELF en la carpeta /tmp/)
+
+3. VECTOR: PERSISTENT WEB SCANNING (HTTP Payload)
+   - sample_79.124.40.174_1772547495.bin
+   - sample_79.124.40.174_1772126581.bin
+   (Nota: Atacante recurrente desde Bulgaria, buscando vulnerabilidades web genéricas)
+
+4. VECTOR: BASE64 ENCODED EXPLOITS (Posibles Web Shells)
+   - sample_167.71.3.101_1772097502.bin
+   - sample_167.71.3.101_1772097494.bin
+   (Nota: Contienen cadenas codificadas, probablemente intentos de bypass de WAF)
+
+----------------------------------------------------------
+ACCION RECOMENDADA: Pasar estas muestras a Qwen local para desofuscación de Base64 y extracción de IPs de C2.

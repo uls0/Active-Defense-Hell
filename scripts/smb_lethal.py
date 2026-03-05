@@ -1,62 +1,72 @@
-import os
 import time
 import random
-import binascii
-from scripts import zip_generator
+import socket
+import os
+import hashlib
 
-def smb_infinite_maze(client_socket, ip, tracker):
-    """
-    Protocolo HYDRA-GORGON v12.0: Optimizado para Aeternum C2.
-    """
-    header = binascii.unhexlify("fe534d4240000000000000000000000000000000000000000000000000008000")
-    
-    try:
-        bolt_payload = zip_generator.generate_stealth_bolt()
-        depth = 0
-        
-        # 15 nombres de archivos/carpetas críticos para atraer a Aeternum
-        aeternum_bait = [
-            "Wallets_Backup", "Metamask_Vault_Backup.json", "Exodus_Keys_2026.zip",
-            "TrustWallet_Recovery.txt", "Ledger_Live_Metadata.db", "Binance_API_Keys.env",
-            "Crypto_Tax_Report_MX.xlsx", "Coinbase_Auth_Token.key", "AtomicWallet_Secret_Phrase.txt",
-            "Electrum_Wallet_Dat.bak", "Phantom_Solana_Backup.json", "Trezor_Device_ID.txt",
-            "Mining_Farm_Access.csv", "Private_Key_Mainnet.pem", "Ethereum_Staking_Nodes.log"
-        ]
-        
-        while True:
-            depth += 1
-            current_bait = random.choice(aeternum_bait)
-            fake_folders = [
-                f"SYS_BACKUP_NODE_{random.randint(100,999)}",
-                current_bait,
-                f"RECOVERY_SEGMENT_{depth}",
-                "ADMIN_LOGS_HIDDEN"
-            ]
-            
-            folder_list = " | ".join(fake_folders).encode()
-            client_socket.send(header + b" [DIR_TREE] " + folder_list)
-            
-            # Drip-Feed Exfiltration
-            if depth % 5 == 0:
-                print(f"[🛡️] HYDRA SMB: Atrapando IP {ip} en Drip-Feed (Segmento {depth})")
-                for i in range(0, 100):
-                    client_socket.send(bolt_payload[i:i+1])
-                    tracker['bytes'] += 1
-                    time.sleep(random.uniform(1, 3))
-            
-            # Heartbeat Proding - Byte nulo cada 25s
-            for _ in range(5):
-                time.sleep(5)
-                try:
-                    client_socket.send(b"\x00")
-                except: break
-            
-            tracker['bytes'] += len(folder_list)
-            
-    except: pass
+# IP del servidor HELL para los canarios (pública)
+HELL_IP = os.getenv("MY_IP", "178.128.72.149")
+
+def generate_canary_url(ip, file_name):
+    """Genera una URL canario única vinculada a la IP del bot."""
+    token = hashlib.sha1(f"{ip}:{file_name}:{time.time()}".encode()).hexdigest()[:8]
+    # El endpoint vive en el dashboard server (puerto 8888)
+    return f"http://{HELL_IP}:8888/v1/auth/verify/{token}"
 
 def handle_smb_session(client_socket, ip):
-    tracker = {'bytes': 0}
-    print(f"[🔥] HYDRA-GORGON v12.0 (Aeternum-Bait) ACTIVATED against {ip}")
-    smb_infinite_maze(client_socket, ip, tracker)
-    return tracker['bytes']
+    """
+    Simula un servidor SMB corporativo con Inyección de Canarios (v12.6-HUNT).
+    """
+    session_bytes = 0
+    start_time = time.time()
+    
+    LURES = [
+        "AWS_Root_Access_Keys_PROD.json", "CEO_Private_Email_Archive.pst", "Salary_Review_2026.xlsx",
+        "MongoDB_Atlas_Admin_Auth.json", "VPN_Config_Keys.ovpn", "GitHub_Enterprise_Token.txt",
+        "Azure_Global_Admin_Secret.txt", "Production_DB_Backup_Snapshot.sql"
+    ]
+
+    try:
+        # 1. STALL INICIAL (3s)
+        time.sleep(3.0)
+        client_socket.send(b"\x00\x00\x00\x85\xffSMB\x72\x00\x00\x00\x00\x18\x53\xc8\x00\x00")
+        
+        # 2. GOTEO DE CARNADAS CON CANARIOS
+        random.shuffle(LURES)
+        
+        for lure in LURES:
+            try:
+                time.sleep(random.uniform(0.5, 1.5))
+                
+                # Si el bot intenta leer el contenido del archivo
+                # Generamos una URL de rastreo única para este evento
+                canary_link = generate_canary_url(ip, lure)
+                
+                # Inyectamos el canario según el formato del archivo
+                if ".json" in lure:
+                    content = f'{{"access_key": "AKIA...", "secret": "...", "verify_internal": "{canary_link}"}}'
+                elif ".txt" in lure or ".env" in lure:
+                    content = f"ADMIN_TOKEN=ghp_... \nVERIFY_ENDPOINT={canary_link}\n"
+                elif ".sql" in lure:
+                    content = f"-- Master DB Credentials --\nINSERT INTO auth_keys VALUES ('admin', 'p@ss', '{canary_link}');\n"
+                else:
+                    content = f"Internal Verification Required: {canary_link}\n"
+                
+                # Enviamos metadatos de archivo
+                fake_info = f"[FILE] {lure} | Content: {content}\n"
+                client_socket.send(fake_info.encode())
+                session_bytes += len(fake_info)
+                
+            except: break
+
+        # 3. MANTENER CONEXIÓN (Infinite Tarpit)
+        while True:
+            if time.time() - start_time > 14400: break
+            time.sleep(10)
+            try:
+                client_socket.send(b"\x00" * 512)
+                session_bytes += 512
+            except: break
+                
+    except Exception: pass
+    return session_bytes

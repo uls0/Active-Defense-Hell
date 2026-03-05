@@ -1,0 +1,72 @@
+[
+  {
+    "id": "HELL-ID-001",
+    "nombre": "CVE-2026-21513 (MSHTML 0-Day)",
+    "puerto": "80, 443",
+    "ataque": "Security Feature Bypass (Execution of malicious MSHTML content)",
+    "variant": "Windows/Office Suite Vulnerability",
+    "posible_mitigacion": "Aplicar parche de seguridad de Microsoft (Febrero 2026) y deshabilitar macros no confiables.",
+    "plan_de_ataque": "Emular un servidor de documentos compartidos de Office. Al detectar una solicitud de carga de recursos remotos (DDE/OLE), HELL responderá con un payload de 10GB (Fifield Bomb) camuflado como un archivo .docm para agotar el proceso de escaneo del atacante.",
+    "pais_de_origen": "Rusia (APT28 / Fancy Bear)"
+  },
+  {
+    "id": "HELL-ID-002",
+    "nombre": "Cisco SD-WAN Auth Bypass (CVE-2026-20127)",
+    "puerto": "443, 8443",
+    "ataque": "Authentication Bypass allowing full administrative access",
+    "variant": "Cisco Catalyst SD-WAN Infrastructure",
+    "posible_mitigacion": "Actualizar Cisco SD-WAN a la versión recomendada y restringir el acceso a la interfaz de administración por ACL.",
+    "plan_de_ataque": "Desplegar una interfaz falsa de login de Cisco SD-WAN. Permitir el bypass de autenticación simulado para llevar al atacante a un dashboard falso de control de red. Cada cambio que intente realizar disparará un 'Lethal-Stall' que ralentizará su conexión hasta dejarla inutilizable.",
+    "pais_de_origen": "Desconocido (Actor estatal avanzado)"
+  },
+  {
+    "id": "HELL-ID-003",
+    "nombre": "SolarWinds Serv-U RCE (CVE-2025-40538)",
+    "puerto": "21, 22, 1338",
+    "ataque": "Remote Code Execution via Broken Access Control",
+    "variant": "Serv-U 15.5 and prior",
+    "posible_mitigacion": "Instalar el hotfix de SolarWinds y habilitar autenticación multifactor (MFA) para transferencias de archivos.",
+    "plan_de_ataque": "Emular un servidor Serv-U en el puerto 1338. Aceptar comandos de shell inyectados, pero en lugar de ejecutarlos, responder con una terminal 'Crusher' que envía secuencias ANSI infinitas para colapsar la consola del atacante.",
+    "pais_de_origen": "Global (Buscado por actores de Ransomware)"
+  },
+  {
+    "id": "HELL-ID-004",
+    "nombre": "Contagious Interview npm Packages",
+    "puerto": "80, 443, 2375",
+    "ataque": "Supply Chain Attack distributing cross-platform RAT",
+    "variant": "NPM Registry Malware (Pastebin C2)",
+    "posible_mitigacion": "Verificar integridad de paquetes npm con 'npm audit' y bloquear conexiones a Pastebin en servidores críticos.",
+    "plan_de_ataque": "Simular una API de registro de paquetes (npm/docker). Ofrecer una descarga de dependencia maliciosa que, al ser consultada, inyecte un token canario 'HUNT' para rastrear la IP real y el ASN del operador del botnet.",
+    "pais_de_origen": "Corea del Norte (Lazarus / ScarCruft)"
+  },
+  {
+    "id": "HELL-ID-005",
+    "nombre": "Sangoma FreePBX Command Injection",
+    "puerto": "5060, 80",
+    "ataque": "Web Shell deployment via unauthenticated command injection",
+    "variant": "Sangoma FreePBX Framework",
+    "posible_mitigacion": "Actualizar el framework de FreePBX y restringir el acceso HTTP/HTTPS al segmento de voz.",
+    "plan_de_ataque": "Desplegar el módulo 'Honey-Drip' simulando un panel VoIP de Sangoma. Capturar todos los intentos de inyección de comandos web shell y almacenarlos para análisis SHA256 (Malware Triage), mientras se inundan las solicitudes del atacante con basura aleatoria (Flood 🌊).",
+    "pais_de_origen": "Buscado por grupos de Fraude Telefónico y Espionaje"
+  },
+  {
+    "id": "HELL-ID-006",
+    "nombre": "Medusa Ransomware Target (Healthcare)",
+    "puerto": "3389, 445, 1433",
+    "ataque": "Ransomware deployment following lateral movement",
+    "variant": "Medusa ransomware family",
+    "posible_mitigacion": "Deshabilitar RDP público, usar VPN con MFA y segmentar bases de datos SQL de pacientes.",
+    "plan_de_ataque": "Activar el módulo 'Gilded-Vault' (MySQL/SQL) en el puerto 1433 con 100 carnadas críticas simulando datos de salud. Si el atacante intenta cifrar o descargar las tablas, se activará el 'Overlapping Zip Bomb' de 4.5 PB para aniquilar su ancho de banda y almacenamiento.",
+    "pais_de_origen": "Corea del Norte (Lazarus Group / Diamond Sleet)"
+  },
+  {
+    "id": "HELL-ID-007",
+    "nombre": "MuddyWater Operation Olalampo",
+    "puerto": "80, 443, 5555",
+    "ataque": "Malware delivery (GhostFetch, CHAR, HTTP_VIP)",
+    "variant": "Targeting MENA organizations",
+    "posible_mitigacion": "Monitorear tráfico HTTP inusual hacia C2 externos y bloquear hashes conocidos de GhostFetch.",
+    "plan_de_ataque": "Emular una infraestructura de 'C2' desprotegida que parece pertenecer a una organización del Medio Oriente. Atraer el tráfico de reconocimiento de MuddyWater y responder con protocolos de 'Drip-feed' para mantener sus herramientas ocupadas en un bucle forense infinito.",
+    "pais_de_origen": "Irán (MuddyWater / Mango Sandstorm)"
+  }
+]

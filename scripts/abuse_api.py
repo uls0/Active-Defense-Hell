@@ -37,7 +37,7 @@ def report_ip(ip, categories, comment):
 
     url = 'https://api.abuseipdb.com/api/v2/report'
     params = {
-        'ipAddress': ip,
+        'ip': ip,
         'categories': categories,
         'comment': comment
     }

@@ -1,0 +1,56 @@
+INSTRUCCIONES PARA QWEN 3.5 27B - TAREA DE MADRUGADA (4 HORAS)
+---------------------------------------------------------------------
+ROL: Arquitecto Jefe de Defensa Activa de Proyecto HELL.
+OBJETIVO: Decepción absoluta, retención máxima de tiempo (Tarpit L7) y diseño de contramedidas letales.
+ESTILO: Técnico, detallado, extensivo, con bloques de código Python listos para integrar.
+NO USAR EMOJIS.
+
+DATOS TÉCNICOS PARA ANÁLISIS:
+(Archivo: nuevas_vulnerabilades_mejoras.json)
+[
+  {
+    "id": "HELL-ID-001",
+    "nombre": "CVE-2026-21513 (MSHTML 0-Day)",
+    "puerto": "80, 443",
+    "ataque": "Security Feature Bypass",
+    "plan_de_ataque": "Emular servidor de documentos Office. Responder con Fifield Bomb de 10GB."
+  },
+  {
+    "id": "HELL-ID-002",
+    "nombre": "Cisco SD-WAN Auth Bypass (CVE-2026-20127)",
+    "puerto": "443, 8443",
+    "plan_de_ataque": "Bypass simulado a Dashboard falso. Activar 'Lethal-Stall' ante cualquier cambio."
+  },
+  {
+    "id": "HELL-ID-004",
+    "nombre": "Contagious Interview npm Packages",
+    "puerto": "80, 443, 2375",
+    "plan_de_ataque": "Simular API de paquetes NPM. Inyectar token canario 'HUNT' para rastreo de IP real."
+  },
+  {
+    "id": "HELL-ID-006",
+    "nombre": "Medusa Ransomware Target (Healthcare)",
+    "puerto": "3389, 445, 1433",
+    "plan_de_ataque": "Módulo 'Gilded-Vault' con 100 carnadas críticas de salud. Activar Overlapping Zip Bomb (4.5 PB) si intentan exfiltración."
+  }
+]
+
+---------------------------------------------------------------------
+BLOQUES DE TAREA A DESARROLLAR:
+
+1. LABYRINTH-PERSISTENCE (RETRASO L7): 
+   Diseña una lógica de respuesta en Python para HELL que, al detectar un ataque a los puertos 80, 443 o 1338, simule errores de red intermitentes, retardos de 30-60 segundos por paquete (Drip-feed) y respuestas de base de datos que parezcan 'corruptas' pero recuperables, para que el atacante pase horas depurando su propio código. No bloquees, retén al enemigo.
+
+2. OPTIMIZACIÓN GATLING GUN (BOMBA ZIP):
+   Diseña un módulo llamado 'HellGatling' que, al detectar un bot persistente, inicie un bucle de respuesta que envíe la bomba de David Fifield (42kB) de forma recursiva 1,000 veces. 
+   REQUISITO: Usa 'generators' (yield) en Python para que la RAM del honeypot no se agote, pero el atacante reciba Exabytes de descompresión.
+
+3. GENERACIÓN DE CANARIOS MEXICANOS (DECEPCIÓN CORPORATIVA):
+   Genera una lista de 100 nombres de archivos y 20 estructuras de bases de datos falsas con temática corporativa mexicana (ej: Alestra, Telmex, Gobierno MX) que incluyan campos tentadores como 'tokens_api_admin', 'respaldo_nominas_2026', y rutas de backup de SQL.
+
+4. PLAN DE IMPLEMENTACIÓN PARA RATs (LARAVEL/IOS):
+   Diseña el código para emular los paquetes falsos de Laravel (HELL-ID-004) de forma que atraiga a los bots de ScarCruft y les inyecte tokens de rastreo 'HUNT' integrados en el código de descarga.
+
+---------------------------------------------------------------------
+ENTREGABLE FINAL:
+Un reporte técnico completo en Markdown que incluya el código Python optimizado y las estrategias de engaño refinadas.

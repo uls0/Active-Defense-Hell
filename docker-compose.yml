@@ -14,6 +14,7 @@ services:
       - ./logs:/app/logs
       - ./scripts:/app/scripts
       - ./hell_core.py:/app/hell_core.py
+      - ./templates:/app/templates
     cap_add:
       - NET_ADMIN
       - NET_RAW
@@ -30,6 +31,21 @@ services:
       - ./templates:/app/templates
     depends_on:
       - hell_core
+
+  hell_traps_extra:
+    build: .
+    container_name: hell_traps_extra
+    restart: always
+    network_mode: "host"
+    command: python3 -u scripts/neural_kube_trap.py
+    volumes:
+      - ./logs:/app/logs
+      - ./scripts:/app/scripts
+    deploy:
+      resources:
+        limits:
+          cpus: '0.40'
+          memory: 200M
 
   hell_db:
     image: mysql:8.0

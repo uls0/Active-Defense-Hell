@@ -1,0 +1,28 @@
+CHECKLIST DE OPERACIÓN MADRUGADA - PROYECTO HELL
+-------------------------------------------------
+FECHA: 04 DE MARZO, 2026
+ESTADO: XEON W-2145 (48GB RAM + P2000 5GB)
+
+1. VERIFICACIÓN DE VIGILIA ABYSSI:
+   Asegúrate de que los 4 reportes del blog en GitHub Pages ya hayan terminado su procesamiento (CPU bajo del 90%).
+
+2. CONFIGURACIÓN DE LM STUDIO (MODO ULTRA):
+   - Threads: 14 o 16
+   - GPU Offload: 10 o 15 capas (si no da error)
+   - Context Length: 16384 o 32768
+   - Flash Attention: ON
+
+3. LANZAMIENTO DE LA TAREA:
+   - Abre el archivo 'SUPER_PROMPT_MADRUGADA.txt'.
+   - Copia TODO el contenido.
+   - Pégalo en el chat de Qwen 3.5 27B.
+   - Presiona ENTER y asegúrate de que empiece a generar el 'Thinking Process'.
+
+4. RECOLECCIÓN (MAÑANA 8:00 AM):
+   - Copia la respuesta inmensa de Qwen.
+   - Guárdala en esta carpeta con el nombre 'HELL_STRATEGIC_REPORT_MARCH_05.md'.
+   - Revisa el código Python generado para integrarlo a HELL.
+
+¡Éxito en la infiltración!
+Vigilia Abyssi.
+-------------------------------------------------

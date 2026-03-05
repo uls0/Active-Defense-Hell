@@ -10,7 +10,7 @@ import signal
 import psutil
 from scripts import smb_lethal, shell_emulator, k8s_emulator, scada_emulator, zip_generator, icmp_tarpit, network_mangler, abuse_generator, ja3_engine, predictive_ai, database_emulator, forensics_engine, profiler_engine, self_healing, canary_generator, malware_triage, bgp_emulator, network_simulator, advanced_tarpit, threat_intel, abuse_api, ldap_emulator
 
-VERSION = "v12.7-LETHAL-LDAP"
+VERSION = "v12.8-CISCO-KILLER"
 LOG_FILE = "logs/hell_activity.log"
 HOST = '0.0.0.0'
 # Puertos expandidos para las 10 botnets + LDAP

@@ -1,6 +1,8 @@
 #!/bin/bash
+VERSION="v12.8-CISCO-KILLER"
+BASE_DIR="/root/Active-Defense-Hell"
 echo "============================================================"
-echo "      🔍 HELL v9.0.4: ULTIMATE PURE ARSENAL"
+echo "      🔍 HELL $VERSION: BATTLE READY"
 echo "============================================================"
 
 echo "[*] Container Status:"
@@ -8,7 +10,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}" | grep hell
 
 echo -e "\n[*] Network Deception Listeners:"
 # Puertos base
-for port in 22 80 443 445 88 179 389 502 1433 2222 3306 3389 4455 8080 8443 8888 33001 1338 8545 3333 18080; do
+for port in 22 80 443 445 88 179 389 502 1433 2222 2323 3306 3389 4455 8080 8443 8888 33001 1338 8545 3333 18080; do
     ss -tuln | grep ":$port " > /dev/null
     if [ $? -eq 0 ]; then
         echo -e "  [✅] Port $port: ACTIVE"
@@ -26,7 +28,7 @@ else
 fi
 
 echo -e "\n[*] Forensic Pulse (Last 10 lines):"
-[ -f logs/hell_activity.log ] && tail -n 10 logs/hell_activity.log || echo "  [!] Log file not found."
+[ -f "$BASE_DIR/logs/hell_activity.log" ] && tail -n 10 "$BASE_DIR/logs/hell_activity.log" || echo "  [!] Log file not found at $BASE_DIR/logs/hell_activity.log"
 
 echo -e "\n[*] Lethal Engagement Monitor (Top Connections):"
 ss -tnp | grep python3 | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -nr | head -n 10 || echo "  [!] No active engagements."

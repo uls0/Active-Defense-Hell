@@ -1,82 +1,26 @@
 version: '3.8'
-
 services:
   hell_core:
     build: .
     container_name: hell_core
     restart: always
-    network_mode: "host"
+    network_mode: host
     privileged: true
-    command: python3 -u hell_core.py
-    environment:
-      - MY_IP=${MY_IP:-127.0.0.1}
     volumes:
       - ./logs:/app/logs
       - ./scripts:/app/scripts
-      - ./hell_core.py:/app/hell_core.py
+      - ./payloads:/app/payloads
       - ./templates:/app/templates
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
+    environment:
+      - MY_IP=${MY_IP}
 
   hell_dashboard:
     build: .
     container_name: hell_dashboard
     restart: always
-    network_mode: "host"
+    network_mode: host
     command: python3 -u scripts/dashboard_server.py
     volumes:
       - ./logs:/app/logs
       - ./scripts:/app/scripts
       - ./templates:/app/templates
-    depends_on:
-      - hell_core
-
-  hell_traps_extra:
-    build: .
-    container_name: hell_traps_extra
-    restart: always
-    network_mode: "host"
-    command: python3 -u scripts/neural_kube_trap.py
-    volumes:
-      - ./logs:/app/logs
-      - ./scripts:/app/scripts
-    deploy:
-      resources:
-        limits:
-          cpus: '0.40'
-          memory: 200M
-
-  hell_lucifer:
-    build: .
-    container_name: hell_lucifer
-    restart: always
-    network_mode: host
-    privileged: true
-    command: python3 -u scripts/hell_lucifer.py
-    volumes:
-      - .:/app
-    environment:
-      - MY_IP=${MY_IP:-127.0.0.1}
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  hell_db:
-    image: mysql:8.0
-    container_name: hell_db_backend
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_hell_2026}
-    volumes:
-      - hell_data:/var/lib/mysql
-    networks:
-      - hell_net
-
-networks:
-  hell_net:
-    driver: bridge
-
-volumes:
-  hell_data:

@@ -1,13 +1,14 @@
-#!/bin/sh
+#!/bin/bash
+set -e
+
 echo "[*] HELL OS ENTRYPOINT STARTING..."
 
-# Eliminamos pkill para evitar matar otros módulos en modo host
-echo "[*] Checking Network Privileges..."
-ip addr show > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    echo "[❌] FATAL: No network privileges."
-    exit 1
-fi
+# Limpiar reglas previas del VOID
+iptables -t nat -F PREROUTING || true
 
-echo "[*] Launching Task: $@"
+# Configurar el VOID (Redirigir rango masivo al 6666)
+echo "[*] ACTIVATING VOID REDIRECTION (20101-65534 -> 6666)"
+iptables -t nat -A PREROUTING -p tcp --dport 20101:65534 -j REDIRECT --to-ports 6666
+
+echo "[*] Network Privileges Granted. Starting Core..."
 exec "$@"

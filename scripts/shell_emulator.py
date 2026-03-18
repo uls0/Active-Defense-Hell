@@ -1,7 +1,7 @@
 import time
 import os
 import random
-from scripts import zip_generator
+from scripts import zeruel_bomb
 
 def terminal_crusher(client_socket):
     ansi_bomb = b"\x1b[2J\x1b[H\x1b[?1049h"
@@ -38,7 +38,7 @@ def handle_cowrie_trap(client_socket, ip):
         client_socket.send(b"\r\n[!] CRITICAL SYSTEM EXCEPTION: MEMORY PRESSURE DETECTED.\r\n")
         client_socket.send(b"[*] INITIATING EMERGENCY MEMORY DUMP (10 SEGMENTS)...\r\n")
         
-        bomb_list = zip_generator.get_bomb_list()
+        bomb_list = zeruel_bomb.get_bomb_list()
         for index, payload in enumerate(bomb_list):
             client_socket.send(f"\r\n--- TRANSFERRING DUMP_SEGMENT_{index+1}/10 (5.5 GB Expansion) ---\r\n".encode())
             client_socket.send(payload)
@@ -48,3 +48,4 @@ def handle_cowrie_trap(client_socket, ip):
         terminal_crusher(client_socket)
         
     except: pass
+

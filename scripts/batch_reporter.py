@@ -22,7 +22,7 @@ def get_recent_attackers(hours=10):
     time_threshold = datetime.now() - timedelta(hours=hours)
     
     # Expresiones regulares para capturar IP y Timestamp
-    # [+] ULTIMATE DECEPTION TRIGGERED: 2026-02-27 18:52:56
+    # [+] ANGEL_DETECTED TRIGGERED: 2026-02-27 18:52:56
     # IP: 204.76.203.56
     
     with open(LOG_FILE, 'r', encoding='utf-8', errors='ignore') as f:
@@ -84,3 +84,4 @@ def run_batch_report():
 
 if __name__ == "__main__":
     run_batch_report()
+

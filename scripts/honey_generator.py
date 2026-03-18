@@ -1,5 +1,5 @@
 import os
-from scripts import canary_generator
+from scripts import armisael_tokens
 
 def generate_decoy_set(ip):
     """Genera un set de archivos carnada para una IP específica"""
@@ -10,7 +10,7 @@ def generate_decoy_set(ip):
     nomina_path = os.path.join(decoy_dir, "NOMINA_EJECUTIVA_2026.pdf")
     with open(nomina_path, "wb") as f:
         # Usamos el generador de canarios que ya tenemos
-        f.write(canary_generator.generate_canary_pdf("MY_IP_HERE", f"SMB_NOMINA_{ip}"))
+        f.write(armisael_tokens.generate_canary_pdf("MY_IP_HERE", f"SMB_NOMINA_{ip}"))
     
     # 2. Archivo de contraseñas (Texto plano falso)
     creds_path = os.path.join(decoy_dir, "ACCESOS_VPN_PROD.txt")
@@ -26,5 +26,6 @@ TOKEN: 882931
 def get_decoy_file(filename, ip):
     """Simula la entrega de un archivo carnada"""
     if "NOMINA" in filename.upper():
-        return canary_generator.generate_canary_pdf("MY_IP_HERE", f"EXFIL_{ip}")
+        return armisael_tokens.generate_canary_pdf("MY_IP_HERE", f"EXFIL_{ip}")
     return b"ACCESS DENIED: Resource encrypted by Sentinel-Shield."
+

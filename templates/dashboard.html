@@ -2,186 +2,177 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>HELL v12.5 | TACTICAL ARSENAL</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>HELL v16.5 | TACTICAL COMMAND CENTER</title>
     <style>
-        body { background-color: #050505; color: #e0e0e0; font-family: 'Courier New', monospace; }
-        .neon-border { border: 1px solid #ff0000; box-shadow: 0 0 10px #ff0000; }
-        .stat-card { background: rgba(15, 15, 15, 0.95); border: 1px solid #222; }
-        .glitch { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .botnet-alert { border-left: 4px solid #ff0000; background: rgba(255, 0, 0, 0.1); }
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-red: #ff003c;
+            --neon-green: #39ff14;
+            --dark-bg: #050608;
+            --panel-bg: rgba(10, 12, 16, 0.9);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: var(--dark-bg); 
+            color: #e0e0e0; 
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex; flex-direction: column;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050608 100%);
+        }
+        .header { display: flex; justify-content: space-between; align-items: end; padding: 15px; border-bottom: 1px solid rgba(0, 243, 255, 0.3); }
+        .grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 15px; flex-grow: 1; padding: 15px; overflow: hidden; }
+        .card { background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.1); padding: 15px; border-radius: 4px; position: relative; backdrop-filter: blur(5px); }
+        .cyber-border { border-left: 4px solid var(--neon-cyan); box-shadow: -5px 0 15px rgba(0, 243, 255, 0.2); }
+        .stat-label { font-size: 10px; color: #555; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        .stat-value { font-size: 32px; font-weight: 900; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .feed-container { overflow-y: auto; height: 100%; font-size: 11px; }
+        .event-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; display: flex; justify-content: space-between; }
+        .event-ip { color: var(--neon-red); font-weight: bold; font-size: 13px; }
+        .event-port { color: var(--neon-green); font-size: 10px; background: #111; padding: 2px 6px; border-radius: 2px; }
+        .glitch-text { animation: glitch 4s infinite; color: #fff; font-style: italic; letter-spacing: -2px; }
+        @keyframes glitch { 0% { transform: skew(0deg); } 2% { transform: skew(5deg); } 4% { transform: skew(-5deg); } 6% { transform: skew(0deg); } 100% { transform: skew(0deg); } }
+        .scanline { width: 100%; height: 2px; background: rgba(0, 243, 255, 0.05); position: absolute; top: 0; animation: scan 6s linear infinite; pointer-events: none; }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+        .data-stream { font-size: 10px; color: var(--neon-green); height: 100px; background: #000; padding: 10px; overflow: hidden; border: 1px solid #111; margin-top: 10px; opacity: 0.7; border-top: 2px solid var(--neon-green); }
+        .botnet-badge { background: rgba(255,0,0,0.2); border: 1px solid var(--neon-red); padding: 5px; margin-top: 8px; border-radius: 2px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { border-color: #400; } 50% { border-color: var(--neon-red); } 100% { border-color: #400; } }
     </style>
 </head>
-<body class="p-4">
-    <div class="flex justify-between items-center border-b border-red-900 pb-4 mb-6">
+<body>
+    <div class="scanline"></div>
+    <div class="header">
         <div>
-            <h1 class="text-2xl font-bold text-red-600 tracking-tighter">PROJECT HELL // v12.5 STORM-WARFARE</h1>
-            <p class="text-[10px] text-gray-500 uppercase">Autonomous Active Defense & Botnet Annhilation Swarm</p>
+            <h1 class="glitch-text" style="font-size: 28px;">PROJECT_HELL <span style="color:var(--neon-red)">SENTINEL_V16.5</span></h1>
+            <div style="font-size: 10px; color: var(--neon-cyan); opacity: 0.6; font-weight: bold;">[ SYSTEM_STATUS: LETHAL_ENGAGEMENT ] [ NODE: DIGITAL_OCEAN_SFO2 ]</div>
         </div>
-        <div class="bg-red-950 text-red-500 px-3 py-1 rounded text-xs font-bold glitch border border-red-600">SYSTEM STATUS: LETHAL / DEFENSE ACTIVE</div>
-    </div>
-
-    <!-- BOTNET INTELLIGENCE ROW -->
-    <div class="mb-6">
-        <h3 class="text-red-600 font-bold mb-2 text-xs uppercase flex items-center">
-            <span class="mr-2">☢️</span> BOTNET DETECTION INTEL (REAL-TIME)
-        </h3>
-        <div id="botnet_box" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <!-- Botnet alerts injected here -->
-            <div class="stat-card p-3 rounded text-center border-dashed border-gray-800 text-gray-600 text-[10px]">Scanning for signatures...</div>
+        <div style="text-align: right;">
+            <div id="clock" style="font-size: 24px; font-weight: bold; color: var(--neon-cyan); font-family: monospace;">00:00:00</div>
+            <div style="font-size: 9px; color: #444; letter-spacing: 3px;">GLOBAL_THREAT_TIME</div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div class="stat-card p-4 rounded text-center border-t-2 border-red-600 bg-red-950/10">
-            <span class="text-gray-400 text-xs uppercase font-bold">TOP Attacker IP</span>
-            <div id="top_attacker" class="text-xl font-bold text-red-500">N/A</div>
-        </div>
-        <div class="stat-card p-4 rounded text-center border-t-2 border-blue-500 bg-blue-950/10">
-            <span class="text-gray-400 text-xs uppercase font-bold">TOP Attack Type</span>
-            <div id="top_type" class="text-xl font-bold text-blue-400">N/A</div>
-        </div>
-        <div class="stat-card p-4 rounded text-center border-t-2 border-yellow-500 bg-yellow-950/10">
-            <span class="text-gray-400 text-xs uppercase font-bold">TOP Port</span>
-            <div id="top_port" class="text-xl font-bold text-yellow-500">N/A</div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div class="stat-card p-4 rounded text-center">
-            <span class="text-gray-500 text-[10px] uppercase">Payload Injected</span>
-            <div id="data" class="text-2xl font-bold text-red-500">0 Mb</div>
-        </div>
-        <div class="stat-card p-4 rounded text-center">
-            <span class="text-gray-500 text-[10px] uppercase">Secured Time</span>
-            <div id="time" class="text-2xl font-bold text-blue-500">0 Hrs</div>
-        </div>
-        <div class="stat-card p-4 rounded text-center">
-            <span class="text-gray-500 text-[10px] uppercase">Total Hits</span>
-            <div id="hits" class="text-2xl font-bold text-yellow-500">0</div>
-        </div>
-        <div class="stat-card p-4 rounded text-center">
-            <span class="text-gray-500 text-[10px] uppercase">Active Sockets</span>
-            <div id="active" class="text-2xl font-bold text-green-500">0</div>
-        </div>
-        <div class="stat-card p-4 rounded text-center border-l-2 border-orange-600">
-            <span class="text-gray-500 text-[10px] uppercase">Target Countries</span>
-            <div id="countries_count" class="text-2xl font-bold text-orange-500">0</div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
-        <div class="stat-card p-4 rounded lg:col-span-2 border-l-2 border-red-900">
-            <h3 class="text-red-800 font-bold mb-4 uppercase text-sm">Target Engagement Feed (Detailed)</h3>
-            <div id="feed" class="space-y-3 max-h-[600px] overflow-y-auto pr-2"></div>
-        </div>
-        <div class="stat-card p-4 rounded">
-            <h3 class="text-yellow-700 font-bold mb-4 uppercase text-sm">Attack Signatures</h3>
-            <div id="signatures" class="space-y-2 text-[10px]"></div>
-            <h3 class="text-blue-700 font-bold mt-8 mb-4 uppercase text-sm">Attack Patterns</h3>
-            <div id="types" class="space-y-2 text-[10px]"></div>
-        </div>
-    </div>
-
-    <!-- FOOTER STATS -->
-    <div class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-900 p-2 flex justify-between items-center text-[10px]">
-        <div class="flex space-x-6">
-            <div class="flex items-center space-x-2">
-                <span class="text-gray-600 uppercase">VirusTotal Reports:</span>
-                <span id="vt_count" class="text-blue-500 font-bold">0</span>
+    <div class="grid">
+        <!-- SIDEBAR LEFT: METRICS -->
+        <div class="flex flex-col gap-4">
+            <div class="card cyber-border">
+                <div class="stat-label">BOTS_NEUTRALIZED</div>
+                <div id="hits" class="stat-value" style="color:var(--neon-red)">0</div>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="text-gray-600 uppercase">AbuseIPDB Reports:</span>
-                <span id="abuse_count" class="text-green-500 font-bold">0</span>
+            <div class="card cyber-border" style="border-color: var(--neon-green);">
+                <div class="stat-label">ACTIVE_ENGAGEMENTS</div>
+                <div id="active" class="stat-value" style="color:var(--neon-green)">0</div>
             </div>
-            <div class="flex items-center space-x-2 border-l border-gray-800 pl-4">
-                <span class="text-gray-600 uppercase">Engine Version:</span>
-                <span class="text-gray-400">STORM-WARFARE v12.5.2</span>
+            <div class="card cyber-border" style="border-color: #fff;">
+                <div class="stat-label">DATA_DESTRUCTION</div>
+                <div id="data" class="stat-value" style="color:#fff">0 Mb</div>
+            </div>
+            <div class="card" style="flex-grow: 1; border-color: rgba(255,0,0,0.3);">
+                <div class="stat-label" style="color:var(--neon-red)">☢️ BOTNET_INTEL</div>
+                <div id="botnet_box" style="margin-top: 10px;"></div>
             </div>
         </div>
-        <div class="text-gray-700 italic">
-            Developed by uls0 @ Gemini Tactical Defense
+
+        <!-- CENTER: BATTLE FEED -->
+        <div class="card" style="display: flex; flex-direction: column; border-top: 3px solid var(--neon-cyan);">
+            <div style="font-size: 11px; font-weight: bold; color: var(--neon-cyan); margin-bottom: 10px; border-bottom: 1px solid #111; padding-bottom: 5px;">
+                LIVE_INTERCEPTION_MONITOR (Real-time forensic uplink)
+            </div>
+            <div class="feed-container" id="feed"></div>
+            <div class="data-stream" id="data_stream"></div>
         </div>
+
+        <!-- SIDEBAR RIGHT: SIGNATURES -->
+        <div class="flex flex-col gap-4">
+            <div class="card cyber-border" style="border-left: 0; border-right: 4px solid #ffaa00;">
+                <div class="stat-label">TOP_VULNERABILITIES</div>
+                <div id="signatures" style="font-size: 10px; margin-top: 10px; color: #888;"></div>
+            </div>
+            <div class="card cyber-border" style="border-left: 0; border-right: 4px solid var(--neon-cyan);">
+                <div class="stat-label">GEO_DISTRIBUTION</div>
+                <div id="types" style="font-size: 10px; margin-top: 10px; color: #888;"></div>
+            </div>
+            <div class="card" style="text-align: center; background: rgba(255,0,0,0.05); border: 1px solid rgba(255,0,0,0.2);">
+                <div class="stat-label">CRITICAL_TARGET</div>
+                <div id="top_attacker" style="font-size: 14px; font-weight: bold; color: var(--neon-red); margin-top: 5px;">N/A</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding: 10px 20px; font-size: 9px; color: #333; display: flex; justify-content: space-between; border-top: 1px solid #111;">
+        <div>VT_INTEL_REPORTS: <span id="vt_count" style="color:var(--neon-cyan)">0</span> | ABUSE_DB_UPLINK: <span id="abuse_count" style="color:var(--neon-green)">0</span></div>
+        <div style="font-weight: bold; letter-spacing: 2px;">ULS0 // GEMINI_TACTICAL_AI // SINGULARITY</div>
     </div>
 
     <script>
+        function updateClock() {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
+        }
+        setInterval(updateClock, 1000);
+
+        function genHex(l) {
+            const h = '0123456789ABCDEF'; let s = '';
+            for(let i=0; i<l; i++) s += h[Math.floor(Math.random()*16)];
+            return s;
+        }
+
         async function update() {
             try {
                 const r = await fetch('/api/stats');
                 const d = await r.json();
-                
-                // Stats
-                document.getElementById('data').innerText = (d.total_data * 8).toFixed(2) + " Mb";
-                document.getElementById('time').innerText = (d.total_time / 3600).toFixed(1) + " HR";
-                document.getElementById('hits').innerText = d.hits;
+                document.getElementById('hits').innerText = d.hits.toLocaleString();
                 document.getElementById('active').innerText = d.active_ips.length;
-                document.getElementById('countries_count').innerText = Object.keys(d.countries).length;
-                
-                // Footer
+                document.getElementById('data').innerText = (d.total_data * 8).toFixed(2) + " Mb";
                 document.getElementById('vt_count').innerText = d.vt_reports;
                 document.getElementById('abuse_count').innerText = d.abuse_reports;
-                
-                // TOP Metrics
-                document.getElementById('top_attacker').innerText = d.top_attacker;
-                document.getElementById('top_type').innerText = d.top_type;
-                document.getElementById('top_port').innerText = d.top_port;
+                document.getElementById('top_attacker').innerText = d.top_attacker || 'SCANNING...';
 
-                // Botnet Box
-                if (d.botnets.length > 0) {
-                    document.getElementById('botnet_box').innerHTML = d.botnets.map(b => `
-                        <div class="stat-card p-3 rounded border border-red-900 bg-red-950/20 botnet-alert">
-                            <div class="text-[9px] text-red-500 font-bold uppercase tracking-widest mb-1">☢️ ${b.name}</div>
-                            <div class="text-xs font-bold text-white">${b.ip}</div>
-                            <div class="text-[8px] text-gray-500 mt-1">${b.time}</div>
+                document.getElementById('feed').innerHTML = d.recent_events.slice(-18).reverse().map(e => `
+                    <div class="event-item">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="color:#333; font-family:monospace;">${e.time.split(' ')[1]}</span>
+                            <span class="event-ip">${e.ip}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="color:#555; font-size:9px;">${e.network.substring(0,25)}</span>
+                            <span class="event-port">PORT_${e.port}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                const s = document.getElementById('data_stream');
+                const l = document.createElement('div');
+                l.style.color = Math.random() > 0.5 ? 'var(--neon-green)' : 'var(--neon-cyan)';
+                l.innerText = `[PCAP_INJECT] 0x${genHex(48)}... [OK]`;
+                s.prepend(l); if(s.children.length > 6) s.lastElementChild.remove();
+
+                if (d.botnets && d.botnets.length > 0) {
+                    document.getElementById('botnet_box').innerHTML = d.botnets.slice(0, 3).map(b => `
+                        <div class="botnet-badge">
+                            <div style="font-size: 8px; color: var(--neon-red); font-weight: bold;">[!] THREAT_DETECTION: ${b.name}</div>
+                            <div style="font-size: 12px; color: #fff; font-weight: bold; letter-spacing: 1px;">${b.ip}</div>
                         </div>
                     `).join('');
                 }
 
-                // Feed
-                document.getElementById('feed').innerHTML = d.recent_events.map(e => `
-                    <div class="border-l border-red-950 pl-3 py-2 bg-white/5 rounded-r">
-                        <div class="flex justify-between text-[9px]">
-                            <span class="text-gray-500">${e.time}</span>
-                            <span class="text-red-800 font-bold">${e.origin}</span>
-                        </div>
-                        <div class="flex items-center space-x-3 mt-1">
-                            <b class="text-red-500 text-sm font-bold">${e.ip}</b>
-                            <span class="text-gray-600 text-xs">âžœ</span>
-                            <span class="bg-gray-900 px-2 py-0.5 rounded text-blue-400 text-[10px] font-bold">PORT ${e.port}</span>
-                        </div>
-                        <div class="text-[10px] mt-1">
-                            <span class="text-gray-500">${e.network}</span>
-                            <span class="mx-2 text-gray-800">|</span>
-                            <span class="text-yellow-600 uppercase font-bold">${e.actor}</span>
-                        </div>
-                    </div>
-                `).reverse().join('');
-
-                // Signatures
-                document.getElementById('signatures').innerHTML = Object.entries(d.signatures)
-                    .sort((a,b) => b[1] - a[1])
-                    .slice(0, 10)
-                    .map(([s, count]) => `
-                    <div class="flex justify-between border-b border-gray-900 py-1">
-                        <span class="text-gray-500">${s}</span>
-                        <span class="text-yellow-600 font-bold">${count}</span>
+                document.getElementById('signatures').innerHTML = Object.entries(d.signatures).slice(0, 6).map(([s, c]) => `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #111; padding:4px 0;">
+                        <span style="color:#555">${s.substring(0,22)}</span>
+                        <span style="color:var(--neon-cyan); font-weight:bold;">${c}</span>
                     </div>
                 `).join('');
 
-                // Types
-                document.getElementById('types').innerHTML = Object.entries(d.attack_types)
-                    .sort((a,b) => b[1] - a[1])
-                    .map(([t, count]) => `
-                    <div class="flex justify-between border-b border-gray-900 py-1">
-                        <span class="text-gray-500">${t}</span>
-                        <span class="text-blue-600 font-bold">${count}</span>
+                document.getElementById('types').innerHTML = Object.entries(d.countries).sort((a,b)=>b[1]-a[1]).slice(0, 6).map(([s, c]) => `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #111; padding:4px 0;">
+                        <span style="color:#555">${s}</span>
+                        <span style="color:var(--neon-green); font-weight:bold;">${c}</span>
                     </div>
                 `).join('');
-            } catch (e) { console.error(e); }
+
+            } catch (e) { document.getElementById('status_tag').innerText = "[ OFFLINE_RETRY ]"; }
         }
-        setInterval(update, 2500);
-        update();
+        setInterval(update, 2500); update(); updateClock();
     </script>
 </body>
 </html>

@@ -2,9 +2,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Usar mirrors alternativos si el principal falla
-RUN sed -i 's/deb.debian.org/ftp.us.debian.org/g' /etc/apt/sources.list
-
+# Actualización de sistema y herramientas de red necesarias para HELL
 RUN apt-get update && apt-get install -y \
     iptables \
     netstat-nat \
@@ -14,8 +12,15 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias rompiendo el bloqueo de paquetes del sistema (modo contenedor)
-RUN pip install --no-cache-dir psutil requests cryptography --break-system-packages
+# Instalación de dependencias críticas (incluyendo Flask para el Dashboard)
+RUN pip install --no-cache-dir \
+    psutil \
+    requests \
+    cryptography \
+    flask \
+    flask-cors \
+    python-dotenv \
+    --break-system-packages
 
 ENV PYTHONPATH="/app"
 ENV PYTHONUNBUFFERED=1

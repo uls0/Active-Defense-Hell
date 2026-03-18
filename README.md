@@ -1,21 +1,22 @@
-# HELL (Active Defense Honeypot) - v13.5-SACMEX-SHITO
+# HELL (Active Defense Honeypot) - PROJECT EVANGELION
+## Version: 16.5.6-STABLE (ASCII EDITION)
 
-## 🧠 PROJECT EVANGELION: OPERATION SACMEX
-Infraestructura de defensa autónoma con decepción de infraestructura crítica nacional. El sistema simula ahora ser el portal de gestión de **SACMEX (Sistema de Aguas de la CDMX)** en modo Staging.
+### Overview
+HELL is a high-interaction, active defense infrastructure designed to neutralize botnets and capture forensic intelligence through deception.
 
-### ☢️ Protocolos de Provocación (SACMEX Deception)
-- **Banners Vulnerables:** Los servicios reportan versiones obsoletas de Apache y OpenSSH (v4.3) para atraer exploits automatizados.
-- **Custom Headers:** Todas las respuestas HTTP incluyen el identificador secreto `X-Internal-ID: MX-GOB-SACMEX-STAGE-01`.
-- **Robots.txt Bait:** El archivo `robots.txt` prohíbe el acceso a rutas como `/scada_config/` y `/db_dumps/`, provocando que los bots las busquen agresivamente.
-- **Lilin Leaks:** Se han generado 20 vectores de fuga de credenciales para distribución en la Dark Web y sitios de dumps.
+### Key Changes (March 18, 2026)
+- **Infrastructure Upgrade:** Droplet resized to 8GB RAM / 2 vCPUs to prevent OOM-Killer.
+- **Shadow Log Protocol:** Core writes to `hell_activity.log`, Dashboard reads from `dashboard_live.log` (copy every 5s) to prevent file locking in Host Mode.
+- **Consolidated Architecture:** Dashboard is now an internal thread of the Core process.
+- **Zero-Emoji Policy:** Compliance with GEMINI.md protocol. All UI and logs use ASCII/Text indicators only.
+- **Lethal Modules:** 51 ports active + VOID redirect (20101-65534).
 
-### 👼 Jerarquía de Ángeles (Updated)
-- **ADAM (HELL_CORE):** Orquestador central con identidad SACMEX.
-- **SACHIEL (RDP 3389):** Interceptor de gestión remota para "Administradores de SACMEX".
-- **RAMIEL (OT/ICS):** Protegiendo los puertos de control de bombas y sensores industriales (Modbus/S7).
+### Deployment
+```bash
+export DOCKER_API_VERSION=1.41
+docker-compose up -d --build --force-recreate
+```
 
-## 🚀 Despliegue de Fugas (Leakers Paradise)
-Los 20 archivos en `LOGS/leaks/` están listos para ser "olvidados" en Pastebin, GitHub y Telegram para atraer a los **Lilin** hacia la trampa.
-
----
-*Vigilia Abyssi - Sistema de Inteligencia Distribuida | Neon Genesis HELL*
+### Rollback Point
+Commit: `d9a5731`
+Status: PRODUCTIVE / STABLE

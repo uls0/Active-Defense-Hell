@@ -1,48 +1,24 @@
 {
-  "project_name": "HELL (Active Defense Honeypot) - PROJECT EVANGELION",
-  "version": "13.0.0-LUCIFER-ANGEL",
-  "root_path": "C:/Users/UlisesGuzman/Documents/Proyectos/Gemini/Proyectos_Activos/HELL",
-  "angel_hierarchy": {
-    "1st_angel": "ADAM (HELL_CORE)",
-    "2nd_angel": "LILITH (HELL_CONTEXT)",
-    "3rd_angel": "SACHIEL (RDP Interceptor - Port 3389)",
-    "5th_angel": "RAMIEL (OT/ICS Defense - Ports 502, 102, 20000, 47808)",
-    "11th_angel": "IREUL (Malware Triage & Adaptive Defense)",
-    "12th_angel": "LELIEL (The Void - Port 6666 & Mass Port Redirect)",
-    "14th_angel": "ZERUEL (Fifield Destruction Bomb)",
-    "16th_angel": "ARMISAEL (Canary Tokens & C2 Infection)",
-    "18th_angel": "LILIN (Humanity/Attacker Profiling)"
-  },
-  "active_ports": [80, 443, 8080, 8081, 8082, 8090, 8443, 9200, 2222, 3389, 4455, 23, 445, 1433, 2323, 2525, 3306, 6379, 1337, 2375, 8125, 5060, 5900, 110, 5555, 33001, 1338, 502, 102, 20000, 47808],
+  "project_name": "TITAN STORM-SENTINEL",
+  "version": "16.5.6-STABLE",
+  "status": "PRODUCTIVE",
+  "last_stabled_commit": "d9a5731",
   "infrastructure": {
-    "vps_ip": "178.128.72.149",
-    "ssh_port": 2200,
-    "os": "Debian 12",
-    "user": "root",
-    "password": "INK0uJ8j4a5xCn"
+    "host": "178.128.72.149",
+    "ram": "8GB",
+    "cpu": "2 vCPUs",
+    "os": "Debian 12"
   },
-  "ai_endpoints": {
-    "qwen_host": "172.16.25.12:1234",
-    "openai_compatible": "http://172.16.25.12:1234/v1/chat/completions",
-    "models_api": "http://172.16.25.12:1234/api/v1/models",
-    "local_logs": "C:\\Users\\uguzman\\.lmstudio\\server-logs"
+  "architecture": {
+    "network_mode": "host",
+    "log_protocol": "SHADOW_LOG",
+    "dashboard_port": 8888,
+    "trap_ports": 51,
+    "void_range": "20101-65534"
   },
-  "monitoring_protocol": {
-    "tools": ["monitor_ultimate.py", "check_hell.sh"],
-    "docker_commands": ["docker logs hell_core", "docker logs hell_lucifer", "docker logs hell_traps_extra"],
-    "extra_logs": ["/root/Active-Defense-Hell/logs/hell_activity.log", "/root/Active-Defense-Hell/logs/lucifer_mini.log"],
-    "neutral_report_format": {
-      "header": "# ☢️ INFORME DE INCIDENTE TÁCTICO",
-      "fields": ["ID de Sesión", "Objetivo Detectado", "Atributos de Red", "Vector de Compromiso", "Análisis de Carga", "Respuesta de Mitigación", "Estado de Bloqueo"],
-      "forbidden_words": ["HELL", "Honeypot"],
-      "external_report_template": "[Active Defense System] Automated bot attempting to exploit [CVE]. Targeted [PORT]. Payload: [DETAILS]. Origin: [IP]. Status: Mitigated."
-    }
-  },
-  "defense_modes": {
-    "web": "JS BOMB / Gzip Bomb (10GB)",
-    "lethal": "TCP Fatigue (1ms bytes)",
-    "raw": "Basura aleatoria (Flood 🌊)",
-    "singularity": "Overlapping Zip Bomb (4.5 PB)"
-  },
-  "last_update": "2026-02-25"
+  "constraints": {
+    "emojis": "FORBIDDEN",
+    "indicator_style": "ASCII_TECHNICAL",
+    "privacy": "ANONYMOUS_REPORTING"
+  }
 }

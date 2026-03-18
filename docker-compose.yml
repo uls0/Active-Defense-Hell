@@ -20,7 +20,7 @@ services:
     container_name: hell_db_backend
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: INK0uJ8j4a5xCn
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: hell_forensics
     ports:
       - "33060:3306"

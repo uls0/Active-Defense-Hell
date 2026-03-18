@@ -12,17 +12,13 @@ def generate_fifield_bomb():
 
 def precompute_bombs():
     global CACHE_BOMBS
-    print("[⚡] TITAN-ENGINE: Precalculando arsenal...")
+    print("[*] TITAN-ENGINE: Precalculando arsenal...")
     for _ in range(2):
         CACHE_BOMBS.append(generate_fifield_bomb())
 
 def serve_zip_trap(client_socket):
     try:
         data = CACHE_BOMBS[0] if CACHE_BOMBS else generate_fifield_bomb()
-        header = f"HTTP/1.1 200 OK
-Content-Type: application/zip
-Content-Length: {len(data)}
-
-"
+        header = f"HTTP/1.1 200 OK\r\nContent-Type: application/zip\r\nContent-Length: {len(data)}\r\n\r\n"
         client_socket.send(header.encode() + data)
     except: pass

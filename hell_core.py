@@ -2,13 +2,13 @@ import os, threading, time, socket, sys, json, random, requests, zipfile, io, sh
 from scripts import sachiel_rdp, leliel_void, titan_engine, dashboard_server, ramiel_tarpit
 
 # =============================================================================
-# PROJECT EVANGELION: TITAN CORE v16.5-PURE-SHADOW
+# PROJECT EVANGELION: TITAN CORE v16.5.2-PURE-ASCII
 # =============================================================================
-# Telemetría avanzada para check_hell.
+# Telemetria avanzada para check_hell.
 # Dashboard: 8888 | VOID: 20101-65534
 # =============================================================================
 
-VERSION = "v16.5-PURE-SHADOW"
+VERSION = "v16.5.2-PURE-ASCII"
 LOG_FILE = "logs/hell_activity.log"
 SHADOW_LOG = "logs/dashboard_live.log"
 HOST = '0.0.0.0'
@@ -18,7 +18,6 @@ PORTS = [
     1433, 1521, 1883, 2121, 2222, 2323, 2375, 3306, 3389, 4455, 5678, 8080, 8081, 8082, 8090, 8443, 9200, 
     33001, 1338, 8545, 3333, 18080, 20000, 47808, 6160, 6666, 65535
 ]
-# Excluimos el puerto 8888 explícitamente para el Dashboard separado
 
 class TitanServer:
     def __init__(self):
@@ -68,7 +67,6 @@ class TitanServer:
         except: pass
 
     def start(self):
-        # Shadow Log Sync Thread
         def sync_logs():
             while True:
                 try:
@@ -85,7 +83,7 @@ class TitanServer:
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
             time.sleep(0.01)
         
-        print(f"[SUCCESS] TITAN FORENSIC ONLINE. Shadow Log Active.")
+        print(f"[OK] TITAN FORENSIC ONLINE. Shadow Log Active.")
         while True: time.sleep(1)
 
 if __name__ == "__main__":

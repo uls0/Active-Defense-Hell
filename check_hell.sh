@@ -1,59 +1,71 @@
 #!/bin/bash
-# ============================================================
-#      🔍 HELL TITAN v16.2: COMMAND DASHBOARD
-# ============================================================
-BASE_DIR="/root/Active-Defense-Hell"
-LOG_FILE="$BASE_DIR/logs/hell_activity.log"
 
-echo -e "\e[1;31m============================================================\e[0m"
-echo -e "\e[1;37m      ☢️  HELL TITAN FORENSIC REPORT | MARCH 2026\e[0m"
-echo -e "\e[1;31m============================================================\e[0m"
+# ============================================================
+# HELL TITAN FORENSIC CHECKER - v16.5.2 (ASCII EDITION)
+# ============================================================
 
-# 1. Estado de Infraestructura
-echo -e "\n\e[1;34m[*] INFRAESTRUCTURA CORE:\e[0m"
-docker ps --format "table {{.Names}}\t{{.Status}}" | grep hell || echo "  [!] Docker no detectado o caido."
-PROCESS_CORE=$(ps aux | grep -E 'hell_core|hell_reborn' | grep -v grep | wc -l)
-if [ $PROCESS_CORE -gt 0 ]; then
-    echo -e "  [✅] Núcleo Python Host: ACTIVO (PID: $(pgrep -f hell))"
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+PURPLE='\033[1;35m'
+CYAN='\033[1;36m'
+WHITE='\033[1;37m'
+NC='\033[0m'
+
+echo -e "${RED}============================================================${NC}"
+echo -e "${WHITE}      HELL TITAN FORENSIC REPORT | MARCH 2026${NC}"
+echo -e "${RED}============================================================${NC}"
+
+# 1. ESTADO DE DOCKER
+echo -e "${BLUE}[*] INFRAESTRUCTURA CORE:${NC}"
+DOCKER_STATUS=$(docker ps --format "table {{.Names}}\t{{.Status}}" | grep hell)
+if [ -z "$DOCKER_STATUS" ]; then
+    echo -e "  [!!] Nucleo Docker: CAIDO"
 else
-    echo -e "  [❌] Núcleo Python Host: CAÍDO"
+    echo -e "  [OK] Nucleo Docker: ACTIVO"
+    echo "$DOCKER_STATUS"
 fi
 
-# 2. Resumen de Combate (Parsing de Logs)
-echo -e "\n\e[1;33m[*] MÉTRICAS DE COMBATE RECIENTES:\e[0m"
+# 2. METRICAS DE LOGS
+LOG_FILE="/root/Active-Defense-Hell/logs/hell_activity.log"
 if [ -f "$LOG_FILE" ]; then
-    BOMBS=$(grep -c "\[BOMB_DEPLOYED\]" "$LOG_FILE")
-    TARPITS=$(grep -c "\[TARPIT_STALL\]" "$LOG_FILE")
-    KILLED=$(grep -c "\[LETHAL_EXIT\]" "$LOG_FILE")
-    RDP_SESS=$(grep -c "\[MIRAGE_ENGAGED\]" "$LOG_FILE")
-    VOID_HITS=$(grep -c "TRAPPED IN THE ABYSS" "$LOG_FILE")
-
-    echo -e "  [💣] Bombas Fifield Enviadas: \e[1;32m$BOMBS\e[0m"
-    echo -e "  [🍯] Bots en Tarpit (Greasy): \e[1;32m$TARPITS\e[0m"
-    echo -e "  [💀] Bots Eliminados (Lethal): \e[1;32m$KILLED\e[0m"
-    echo -e "  [🪤] Espejismos RDP Activos:  \e[1;32m$RDP_SESS\e[0m"
-    echo -e "  [🌌] Capturas en el VOID:     \e[1;32m$VOID_HITS\e[0m"
+    HITS=$(grep -c "\[HIT\]" "$LOG_FILE")
+    BOMBS=$(grep -c "BOMB_DEPLOYED" "$LOG_FILE")
+    TARPITS=$(grep -c "TARPIT_STALL" "$LOG_FILE")
+    LETHAL=$(grep -c "LETHAL_EXIT" "$LOG_FILE")
+    VOID_PKTS=$(grep -c "TRAPPED IN THE ABYSS" "$LOG_FILE")
+    
+    echo -e "\n${YELLOW}[*] METRICAS DE COMBATE RECIENTES:${NC}"
+    echo -e "  [STATS] Total de Ataques (Hits): ${GREEN}$HITS${NC}"
+    echo -e "  [BOMB]  Bombas Fifield Enviadas: ${GREEN}$BOMBS${NC}"
+    echo -e "  [TARPIT] Bots en Tarpit (Greasy): ${GREEN}$TARPITS${NC}"
+    echo -e "  [LETHAL] Bots Eliminados (Lethal): ${GREEN}$LETHAL${NC}"
+    echo -e "  [VOID]   Capturas en el Abismo:    ${GREEN}$VOID_PKTS${NC}"
 else
-    echo "  [!] Log no encontrado en $LOG_FILE"
+    echo -e "\n${RED}[!] Error: Archivo de logs no encontrado.${NC}"
 fi
 
-# 3. Puertos Críticos (Live Check)
-echo -e "\n\e[1;36m[*] ESTADO DE PUERTOS DE ENGAÑO:\e[0m"
-for port in 80 443 445 3389 5678 8443 6666 65535; do
-    (echo > /dev/tcp/127.0.0.1/$port) >/dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        echo -e "  [✅] Port $port: \e[1;32mOPEN\e[0m"
-    else
-        echo -e "  [❌] Port $port: \e[1;31mCLOSED\e[0m"
+# 3. ESTADO DE PUERTOS (TOP 100)
+echo -e "\n${CYAN}[*] ESTADO DE PUERTOS DE ENGANO:${NC}"
+PORT_LIST=(21 22 23 25 53 80 81 88 110 111 135 137 139 143 161 179 389 443 445 449 502 102 995 1433 1521 1883 2121 2222 2323 2375 3306 3389 4455 5678 8080 8081 8082 8090 8443 8888 9200 33001 1338 8545 3333 18080 20000 47808 6160 6666 65535)
+
+OPEN_COUNT=0
+for port in "${PORT_LIST[@]}"; do
+    if netstat -tulpn | grep -q ":$port "; then
+        ((OPEN_COUNT++))
     fi
 done
 
-# 4. Top de Atacantes
-echo -e "\n\e[1;35m[*] TOP 5 ADVERSARIOS (ASN/IP):\e[0m"
-if [ -f "$LOG_FILE" ]; then
-    grep "IP:" "$LOG_FILE" | awk '{print $6}' | sort | uniq -c | sort -nr | head -n 5
-else
-    echo "  [!] No hay datos forenses."
+echo -e "  [INFO] Resumen de Trampas: ${GREEN}$OPEN_COUNT/${#PORT_LIST[@]}${NC} puertos LISTOS."
+if [ $OPEN_COUNT -lt ${#PORT_LIST[@]} ]; then
+    echo -e "  [WARN] Advertencia: Algunos puertos criticos estan cerrados."
 fi
 
-echo -e "\e[1;31m============================================================\e[0m"
+# 4. TOP ADVERSARIOS
+echo -e "\n${PURPLE}[*] TOP 5 ADVERSARIOS (IP):${NC}"
+if [ -f "$LOG_FILE" ]; then
+    grep "IP:" "$LOG_FILE" | awk -F'|' '{print $2}' | sort | uniq -c | sort -nr | head -n 5
+fi
+
+echo -e "${RED}============================================================${NC}"

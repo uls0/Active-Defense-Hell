@@ -1,0 +1,1 @@
+API Endpoint: http://178.128.72.149:8080/v1/auth; Key: SACMEX_BETA_2026

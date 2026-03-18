@@ -1,0 +1,1 @@
+INSERT INTO users (user, pass) VALUES ('admin', 'INK0uJ8j4a5xCn'); -- IP: 178.128.72.149

@@ -2,17 +2,17 @@ import os, threading, time, socket, sys, json, random, requests, zipfile, io, sh
 from scripts import sachiel_rdp, leliel_void, titan_engine, dashboard_server, ramiel_tarpit
 
 # =============================================================================
-# PROJECT EVANGELION: TITAN CORE v16.5.2-PURE-ASCII
+# PROJECT EVANGELION: TITAN CORE v16.5.3-CONSOLIDATED-ASCII
 # =============================================================================
 # Telemetria avanzada para check_hell.
-# Dashboard: 8888 | VOID: 20101-65534
+# Dashboard Integrado: 8888 | VOID: 20101-65534
 # =============================================================================
 
-VERSION = "v16.5.2-PURE-ASCII"
+VERSION = "v16.5.3-CONSOLIDATED-ASCII"
 LOG_FILE = "logs/hell_activity.log"
-SHADOW_LOG = "logs/dashboard_live.log"
 HOST = '0.0.0.0'
 
+# Lista de puertos top 100 IANA/Trojan optimizada
 PORTS = [
     21, 22, 23, 25, 53, 80, 81, 88, 110, 111, 135, 137, 139, 143, 161, 179, 389, 443, 445, 449, 502, 102, 995, 
     1433, 1521, 1883, 2121, 2222, 2323, 2375, 3306, 3389, 4455, 5678, 8080, 8081, 8082, 8090, 8443, 9200, 
@@ -35,7 +35,6 @@ class TitanServer:
 
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
-        self.log_event(ip, local_port, "HIT")
         try:
             client_socket.settimeout(10.0)
             if local_port == 3389:
@@ -67,23 +66,19 @@ class TitanServer:
         except: pass
 
     def start(self):
-        def sync_logs():
-            while True:
-                try:
-                    if os.path.exists(LOG_FILE):
-                        shutil.copy2(LOG_FILE, SHADOW_LOG)
-                except: pass
-                time.sleep(5)
-        
-        threading.Thread(target=sync_logs, daemon=True).start()
+        # Iniciar Lucifer (Abismo)
         threading.Thread(target=leliel_void.start_void, args=(self.log_event,), daemon=True).start()
         
-        print(f"[*] Starting listeners for {len(PORTS)} ports...")
-        for port in PORTS:
-            threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
-            time.sleep(0.01)
+        # Iniciar Dashboard Interno (Puerto 8888)
+        threading.Thread(target=dashboard_server.start_dashboard, args=(LOG_FILE,), daemon=True).start()
         
-        print(f"[OK] TITAN FORENSIC ONLINE. Shadow Log Active.")
+        print(f"[*] Spawning {len(PORTS)} port listeners...")
+        for port in PORTS:
+            if port != 8888: # Evitar conflicto con el dashboard
+                threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
+                time.sleep(0.01)
+        
+        print(f"[OK] TITAN FORENSIC ONLINE. Dashboard on port 8888.")
         while True: time.sleep(1)
 
 if __name__ == "__main__":

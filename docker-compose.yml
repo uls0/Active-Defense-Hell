@@ -13,14 +13,14 @@ services:
       - ./templates:/app/templates
     environment:
       - MY_IP=${MY_IP}
+      - VT_API_KEY=${VT_API_KEY}
 
-  hell_dashboard:
-    build: .
-    container_name: hell_dashboard
+  hell_db:
+    image: mysql:8.0
+    container_name: hell_db_backend
     restart: always
-    network_mode: host
-    command: python3 -u scripts/dashboard_server.py
-    volumes:
-      - ./logs:/app/logs
-      - ./scripts:/app/scripts
-      - ./templates:/app/templates
+    environment:
+      MYSQL_ROOT_PASSWORD: INK0uJ8j4a5xCn
+      MYSQL_DATABASE: hell_forensics
+    ports:
+      - "33060:3306"

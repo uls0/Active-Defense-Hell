@@ -16,7 +16,7 @@ services:
       - VT_API_KEY=${VT_API_KEY}
 
   win7_accounting:
-    image: dockur/windows:latest
+    image: dockurr/windows:latest
     container_name: win7_accounting
     environment:
       VERSION: "7"
@@ -29,7 +29,7 @@ services:
     restart: always
 
   win7_developer:
-    image: dockur/windows:latest
+    image: dockurr/windows:latest
     container_name: win7_developer
     environment:
       VERSION: "7"
@@ -42,7 +42,7 @@ services:
     restart: always
 
   winxp_scada:
-    image: dockur/windows:latest
+    image: dockurr/windows:latest
     container_name: winxp_scada
     environment:
       VERSION: "winxp"
@@ -54,7 +54,7 @@ services:
     restart: always
 
   winxp_office:
-    image: dockur/windows:latest
+    image: dockurr/windows:latest
     container_name: winxp_office
     environment:
       VERSION: "winxp"

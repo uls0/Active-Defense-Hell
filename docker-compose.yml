@@ -22,9 +22,13 @@ services:
     container_name: win7_accounting
     environment:
       VERSION: "7"
-      RAM_SIZE: "1.5G"
+      RAM_SIZE: "1G"
     ports:
       - "44891:3389"
+    devices:
+      - /dev/kvm
+    cap_add:
+      - NET_ADMIN
     volumes:
       - ./assets/robbable:/shared
     restart: always
@@ -34,9 +38,13 @@ services:
     container_name: win7_developer
     environment:
       VERSION: "7"
-      RAM_SIZE: "1.5G"
+      RAM_SIZE: "1G"
     ports:
       - "44892:3389"
+    devices:
+      - /dev/kvm
+    cap_add:
+      - NET_ADMIN
     volumes:
       - ./assets/robbable:/shared
     restart: always
@@ -49,6 +57,10 @@ services:
       RAM_SIZE: "512M"
     ports:
       - "44893:3389"
+    devices:
+      - /dev/kvm
+    cap_add:
+      - NET_ADMIN
     volumes:
       - ./assets/robbable:/shared
     restart: always
@@ -61,6 +73,10 @@ services:
       RAM_SIZE: "512M"
     ports:
       - "44894:3389"
+    devices:
+      - /dev/kvm
+    cap_add:
+      - NET_ADMIN
     volumes:
       - ./assets/robbable:/shared
     restart: always

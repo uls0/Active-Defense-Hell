@@ -2,27 +2,24 @@ import os, threading, time, socket, sys, json, random, requests, zipfile, io, sh
 from scripts import sachiel_rdp, leliel_void, titan_engine, dashboard_server, ramiel_tarpit
 
 # =============================================================================
-# PROJECT EVANGELION: TITAN CORE v17.2.5-STABLE-ASCII
+# PROJECT EVANGELION: TITAN CORE v17.3-LIGHT-SACRIFICE
 # =============================================================================
-# Dashboard: 8888 | VOID: 20101-65534 | Sacrifice: 33891-33894
+# Solo Nodos Windows XP para optimizacion de disco (25GB Limit)
 # =============================================================================
 
-VERSION = "v17.2.5-STABLE-ASCII"
+VERSION = "v17.3-LIGHT-SACRIFICE"
 LOG_FILE = "logs/hell_activity.log"
 SHADOW_LOG = "logs/dashboard_live.log"
 HOST = '0.0.0.0'
 
-# Puertos Top 100 + Sacrifice Proxies
 PORTS = [
     21, 22, 23, 25, 53, 80, 81, 88, 110, 111, 135, 137, 139, 143, 161, 179, 389, 443, 445, 449, 502, 102, 995, 
     1433, 1521, 1883, 2121, 2222, 2323, 2375, 3306, 3389, 4455, 5678, 8080, 8081, 8082, 8090, 8443, 9200, 
     33001, 1338, 8545, 3333, 18080, 20000, 47808, 6160, 6666, 65535,
-    33891, 33892, 33893, 33894
+    33893, 33894 # Solo XP Proxies
 ]
 
 SACRIFICE_MAP = {
-    33891: ("127.0.0.1", 44891, "WIN7_ACCOUNTING"),
-    33892: ("127.0.0.1", 44892, "WIN7_DEVELOPER"),
     33893: ("127.0.0.1", 44893, "WINXP_SCADA"),
     33894: ("127.0.0.1", 44894, "WINXP_OFFICE")
 }
@@ -99,11 +96,10 @@ class TitanServer:
             while True:
                 client, addr = server.accept()
                 threading.Thread(target=self.handle_client, args=(client, addr, port), daemon=True).start()
-        except: pass
+        except OSError: pass
         finally: server.close()
 
     def start(self):
-        # Sync Shadow Log
         def sync_logs():
             while True:
                 try:
@@ -120,8 +116,7 @@ class TitanServer:
                 threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
                 time.sleep(0.01)
         
-        print(f"[OK] TITAN FORENSIC ONLINE.")
+        print(f"[OK] TITAN FORENSIC v17.3 ONLINE. Light Sacrifice Grid Active.")
         while True: time.sleep(1)
 
-if __name__ == "__main__":
-    TitanServer().start()
+if __name__ == "__main__": TitanServer().start()

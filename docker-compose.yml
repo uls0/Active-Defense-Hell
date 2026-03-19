@@ -17,40 +17,6 @@ services:
       - VT_API_KEY=${VT_API_KEY}
       - DB_PASSWORD=${DB_PASSWORD}
 
-  win7_accounting:
-    image: dockurr/windows:latest
-    container_name: win7_accounting
-    environment:
-      VERSION: "7"
-      RAM_SIZE: "1G"
-    ports:
-      - "44891:3389"
-      - "8006:8006"
-    devices:
-      - /dev/kvm
-    cap_add:
-      - NET_ADMIN
-    volumes:
-      - ./assets/robbable:/shared
-    restart: always
-
-  win7_developer:
-    image: dockurr/windows:latest
-    container_name: win7_developer
-    environment:
-      VERSION: "7"
-      RAM_SIZE: "1G"
-    ports:
-      - "44892:3389"
-      - "8007:8006"
-    devices:
-      - /dev/kvm
-    cap_add:
-      - NET_ADMIN
-    volumes:
-      - ./assets/robbable:/shared
-    restart: always
-
   winxp_scada:
     image: dockurr/windows:latest
     container_name: winxp_scada

@@ -11,9 +11,11 @@ services:
       - ./scripts:/app/scripts
       - ./payloads:/app/payloads
       - ./templates:/app/templates
+      - ./assets:/app/assets
     environment:
       - MY_IP=${MY_IP}
       - VT_API_KEY=${VT_API_KEY}
+      - DB_PASSWORD=${DB_PASSWORD}
 
   win7_accounting:
     image: dockurr/windows:latest
@@ -21,9 +23,8 @@ services:
     environment:
       VERSION: "7"
       RAM_SIZE: "1.5G"
-      CPU_CORES: "1"
     ports:
-      - "33891:3389"
+      - "44891:3389"
     volumes:
       - ./assets/robbable:/shared
     restart: always
@@ -34,9 +35,8 @@ services:
     environment:
       VERSION: "7"
       RAM_SIZE: "1.5G"
-      CPU_CORES: "1"
     ports:
-      - "33892:3389"
+      - "44892:3389"
     volumes:
       - ./assets/robbable:/shared
     restart: always
@@ -48,7 +48,7 @@ services:
       VERSION: "winxp"
       RAM_SIZE: "512M"
     ports:
-      - "33893:3389"
+      - "44893:3389"
     volumes:
       - ./assets/robbable:/shared
     restart: always
@@ -60,7 +60,7 @@ services:
       VERSION: "winxp"
       RAM_SIZE: "512M"
     ports:
-      - "33894:3389"
+      - "44894:3389"
     volumes:
       - ./assets/robbable:/shared
     restart: always

@@ -1,54 +1,35 @@
-import socket
-import threading
-import os
+import socket, time, os, threading
+
+TARGET_FILE = "/root/Active-Defense-Hell/logs/target_ips.txt"
+LOG_OUT = "/root/Active-Defense-Hell/logs/poke_run.log"
 
 def poke_ip(ip):
-    results = {"ip": ip, "ports": [], "ping": False}
-    
-    # 1. Ping
-    response = os.system(f"ping -n 1 -w 500 {ip} > nul")
-    if response == 0:
-        results["ping"] = True
-        
-    # 2. Port Check
-    for port in [22, 80, 443, 8080, 8443, 3389]:
+    # Intentar conexion a puertos comunes para disparar alertas en el atacante
+    ports = [80, 443, 22, 3389]
+    for port in ports:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1.0)
-            res = s.connect_ex((ip, port))
-            if res == 0:
-                results["ports"].append(port)
+            s.settimeout(1)
+            s.connect((ip, port))
             s.close()
+            with open(LOG_OUT, "a") as f:
+                f.write(f"[OK] POKED: {ip}:{port} at {time.ctime()}\n")
         except: pass
-        
-    if results["ping"] or results["ports"]:
-        print(f"[!] LILIN {ip} RESPONDED: Ping={results['ping']} | Ports={results['ports']}")
-        with open("LOGS/poke_results.log", "a", encoding='utf-8') as f:
-            f.write(f"IP: {ip} | Ping: {results['ping']} | Ports: {results['ports']}
-")
 
-def main():
-    if not os.path.exists("LOGS/attacker_ips.txt"):
-        print("Error: No IPs found.")
+def start_poking():
+    if not os.path.exists(TARGET_FILE):
+        print("[!] Target file not found.")
         return
-        
-    with open("LOGS/attacker_ips.txt", "r") as f:
-        ips = [line.strip() for line in f.readlines() if line.strip()]
+    with open(TARGET_FILE, "r") as f:
+        ips = f.read().splitlines()
     
-    # Tomar las últimas 50 IPs capturadas (las más recientes)
-    recent_ips = ips[-50:]
-    print(f"[*] INICIANDO INCURSIÓN: Picando a {len(recent_ips)} Lilin...")
-    
-    threads = []
-    for ip in recent_ips:
-        t = threading.Thread(target=poke_ip, args=(ip,))
-        threads.append(t)
-        t.start()
-        
-    for t in threads:
-        t.join()
-        
-    print("[*] INCURSIÓN COMPLETADA. REVISAR LOGS/poke_results.log")
+    print(f"[*] Starting Re-Engagement for {len(ips)} targets...")
+    for ip in ips:
+        if ip.strip():
+            threading.Thread(target=poke_ip, args=(ip.strip(),), daemon=True).start()
+            time.sleep(0.2) # Delay para evitar baneo de ISP
 
 if __name__ == "__main__":
-    main()
+    start_poking()
+    # Mantener vivo un momento para que los hilos terminen
+    time.sleep(30)

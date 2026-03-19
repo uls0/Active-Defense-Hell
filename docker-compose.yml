@@ -15,6 +15,56 @@ services:
       - MY_IP=${MY_IP}
       - VT_API_KEY=${VT_API_KEY}
 
+  win7_accounting:
+    image: dockur/windows
+    container_name: win7_accounting
+    environment:
+      VERSION: "7"
+      RAM_SIZE: "1.5G"
+      CPU_CORES: "1"
+    ports:
+      - "33891:3389"
+    volumes:
+      - ./assets/robbable:/shared
+    restart: always
+
+  win7_developer:
+    image: dockur/windows
+    container_name: win7_developer
+    environment:
+      VERSION: "7"
+      RAM_SIZE: "1.5G"
+      CPU_CORES: "1"
+    ports:
+      - "33892:3389"
+    volumes:
+      - ./assets/robbable:/shared
+    restart: always
+
+  winxp_scada:
+    image: dockur/windows
+    container_name: winxp_scada
+    environment:
+      VERSION: "winxp"
+      RAM_SIZE: "512M"
+    ports:
+      - "33893:3389"
+    volumes:
+      - ./assets/robbable:/shared
+    restart: always
+
+  winxp_office:
+    image: dockur/windows
+    container_name: winxp_office
+    environment:
+      VERSION: "winxp"
+      RAM_SIZE: "512M"
+    ports:
+      - "33894:3389"
+    volumes:
+      - ./assets/robbable:/shared
+    restart: always
+
   hell_db:
     image: mysql:8.0
     container_name: hell_db_backend

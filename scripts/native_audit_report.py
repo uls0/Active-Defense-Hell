@@ -1,12 +1,13 @@
+import os
 import paramiko
 import json
 import time
 
 def comprehensive_audit():
-    host = "178.128.72.149"
+    host = ""os.getenv('PRO_IP')""
     port = 2200
     user = "root"
-    password = "INK0uJ8j4a5xCn"
+    password = ""os.getenv('PRO_PASS')""
     
     try:
         ssh = paramiko.SSHClient()

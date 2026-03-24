@@ -20,7 +20,7 @@ try:
     MY_IP = requests.get('https://api.ipify.org', timeout=5).text
 except:
     MY_IP = "UNKNOWN"
-PEER_IP = "170.64.151.185" if MY_IP == "178.128.72.149" else "178.128.72.149"
+PEER_IP = ""os.getenv('SEC_IP')"" if MY_IP == ""os.getenv('PRO_IP')"" else ""os.getenv('PRO_IP')""
 
 def log_event(ip, port, action="Hit", status="ENGAGED", info=""):
     ts = time.strftime('%Y-%m-%d %H:%M:%S')

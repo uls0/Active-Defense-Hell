@@ -2,10 +2,10 @@ import paramiko
 import os
 
 def emergency_redeploy():
-    host = "178.128.72.149"
+    host = ""os.getenv('PRO_IP')""
     port = 2200
     user = "root"
-    password = "INK0uJ8j4a5xCn"
+    password = ""os.getenv('PRO_PASS')""
     project_dir = "/root/Active-Defense-Hell"
     
     local_files = {

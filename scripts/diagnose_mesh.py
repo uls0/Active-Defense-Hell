@@ -1,10 +1,11 @@
+import os
 import paramiko
 import json
 
 def diagnose_mesh():
     nodes = {
-        "PRO": ("178.128.72.149", 2200, "INK0uJ8j4a5xCn"),
-        "SEC": ("170.64.151.185", 22, "INK0uJ8j4a5xCR")
+        "PRO": (""os.getenv('PRO_IP')"", 2200, ""os.getenv('PRO_PASS')""),
+        "SEC": (""os.getenv('SEC_IP')"", 22, ""os.getenv('SEC_PASS')"")
     }
     
     report = {}

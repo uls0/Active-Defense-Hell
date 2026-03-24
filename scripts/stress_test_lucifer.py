@@ -1,16 +1,17 @@
+import os
 import socket
 import threading
 import time
 import paramiko
 
-HOST = "170.64.151.185"
+HOST = ""os.getenv('SEC_IP')""
 PORT = 6666
 
 def monitor_server_resources():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(HOST, 22, "root", "INK0uJ8j4a5xCR", timeout=10)
+        ssh.connect(HOST, 22, "root", ""os.getenv('SEC_PASS')"", timeout=10)
         print("[🔎] Monitoreo iniciado...")
         cmd = "ps -o rss,command -p $(pgrep -f lucifer_prime.py) | tail -n 1 && tail -n 2 /root/Active-Defense-Hell/logs/lucifer_prime.log"
         for _ in range(4):

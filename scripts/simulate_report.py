@@ -1,11 +1,12 @@
+import os
 import paramiko
 import time
 
 def simulate_elite_attack():
-    host = "178.128.72.149"
+    host = ""os.getenv('PRO_IP')""
     port = 2200
     user = "root"
-    password = "INK0uJ8j4a5xCn"
+    password = ""os.getenv('PRO_PASS')""
     log_file = "/root/Active-Defense-Hell/logs/hell_activity.log"
     
     try:

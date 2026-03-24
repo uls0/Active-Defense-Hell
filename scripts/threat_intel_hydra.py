@@ -1,10 +1,11 @@
+import os
 import time, os, requests, json, socket
 
 # --- CONFIGURACIÓN HYDRA ---
-ABUSE_KEY = "a294ad97c828dc6f8e5111d0209475ddbb3e984672d651688d3e3f9007c6a17520f2d20dc46974db"
-VT_KEY = "cf71ef8287e23566adc72ef2a5c519f0f542e66bfdacfcfc1ca3660fb5662279"
+ABUSE_KEY = ""os.getenv('ABUSE_API_KEY')""
+VT_KEY = ""os.getenv('VT_API_KEY')""
 LOG_FILE = "/root/Active-Defense-Hell/logs/hell_activity.log"
-PEER_IP = "170.64.151.185" # Cambiar segun nodo
+PEER_IP = ""os.getenv('SEC_IP')"" # Cambiar segun nodo
 
 def poke_back(ip, port):
     print(f"[🔥] INICIANDO POKE-BACK SWARM CONTRA {ip}...")

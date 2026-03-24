@@ -1,10 +1,11 @@
+import os
 import paramiko
 
 def setup_secondary_node():
-    host = "170.64.151.185"
+    host = ""os.getenv('SEC_IP')""
     port = 22
     user = "root"
-    password = "INK0uJ8j4a5xCR"
+    password = ""os.getenv('SEC_PASS')""
     
     try:
         ssh = paramiko.SSHClient()
@@ -16,7 +17,7 @@ def setup_secondary_node():
             "apt-get install -y python3-pip python3-dev mariadb-server libmariadb-dev-compat psmisc net-tools iptables openssl",
             "systemctl start mariadb && systemctl enable mariadb",
             "mariadb -e 'CREATE DATABASE IF NOT EXISTS hell_forensics;'",
-            "mariadb -e \"CREATE USER IF NOT EXISTS 'hell_user'@'localhost' IDENTIFIED BY 'MasterTv.18a';\"",
+            "mariadb -e \"CREATE USER IF NOT EXISTS 'hell_user'@'localhost' IDENTIFIED BY '"os.getenv('DB_PASS')"';\"",
             "mariadb -e \"GRANT ALL PRIVILEGES ON hell_forensics.* TO 'hell_user'@'localhost';\"",
             "mariadb -e 'FLUSH PRIVILEGES;'",
             "pip3 install mysql-connector-python requests psutil --break-system-packages",

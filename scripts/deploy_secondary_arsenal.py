@@ -2,10 +2,10 @@ import paramiko
 import os
 
 def deploy_secondary_arsenal():
-    host = "170.64.151.185"
+    host = ""os.getenv('SEC_IP')""
     port = 22
     user = "root"
-    password = "INK0uJ8j4a5xCR"
+    password = ""os.getenv('SEC_PASS')""
     project_dir = "/root/Active-Defense-Hell"
     
     local_files = {

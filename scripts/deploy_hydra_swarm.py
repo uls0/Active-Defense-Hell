@@ -1,9 +1,10 @@
+import os
 import paramiko
 
 def deploy_hydra_mesh(host, peer):
-    port = 2200 if host == "178.128.72.149" else 22
+    port = 2200 if host == ""os.getenv('PRO_IP')"" else 22
     user = "root"
-    password = "INK0uJ8j4a5xCn" if host == "178.128.72.149" else "INK0uJ8j4a5xCR"
+    password = ""os.getenv('PRO_PASS')"" if host == ""os.getenv('PRO_IP')"" else ""os.getenv('SEC_PASS')""
     project_dir = "/root/Active-Defense-Hell"
     
     try:
@@ -28,5 +29,5 @@ def deploy_hydra_mesh(host, peer):
         return False
 
 if __name__ == "__main__":
-    deploy_hydra_mesh("178.128.72.149", "170.64.151.185")
-    deploy_hydra_mesh("170.64.151.185", "178.128.72.149")
+    deploy_hydra_mesh(""os.getenv('PRO_IP')"", ""os.getenv('SEC_IP')"")
+    deploy_hydra_mesh(""os.getenv('SEC_IP')"", ""os.getenv('PRO_IP')"")

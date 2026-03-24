@@ -1,13 +1,14 @@
+import os
 import socket
 import ssl
 import paramiko
 import time
 import json
 
-HOST = "178.128.72.149"
+HOST = ""os.getenv('PRO_IP')""
 SSH_PORT = 2200
 USER = "root"
-PASSWORD = "INK0uJ8j4a5xCn"
+PASSWORD = ""os.getenv('PRO_PASS')""
 
 # Puertos a auditar (Muestra representativa de cada categoría)
 ELITE_PORTS = {

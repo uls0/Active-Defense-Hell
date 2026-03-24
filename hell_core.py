@@ -1,104 +1,85 @@
-import os, threading, time, socket, sys, json, random, requests, zipfile, io, shutil
-from scripts import sachiel_rdp, leliel_void, titan_engine, dashboard_server, ramiel_tarpit
+import os, threading, time, socket, sys, json, random
+from elite_deception import EliteHandler
+from scripts import dashboard_server
 
-# =============================================================================
-# PROJECT EVANGELION: TITAN CORE v19.0-LETHAL-SMB
-# =============================================================================
-# Táctica: Fake RDP Acceptance + SMB Drip Bomb + Folder Maze
-# =============================================================================
-
-VERSION = "v19.0-LETHAL-SMB"
+VERSION = "v17.3-HOST-SEQUENTIAL"
 LOG_FILE = "logs/hell_activity.log"
-SHADOW_LOG = "logs/dashboard_live.log"
 HOST = '0.0.0.0'
 
-# Puertos Base + Intercepción Letal
-PORTS = [21, 22, 23, 25, 53, 80, 81, 88, 110, 111, 135, 137, 139, 143, 161, 179, 389, 443, 445, 449, 502, 102, 995, 1433, 1521, 1883, 2121, 2222, 2323, 2375, 3306, 3389, 4455, 5678, 8080, 8081, 8082, 8090, 8443, 9200, 33001, 1338, 8545, 3333, 18080, 20000, 47808, 6160, 6666, 65535, 33893, 33894, 4445]
+# Puertos GOLD & ELITE consolidado
+GOLD_PORTS = [21, 22, 23, 25, 53, 80, 81, 88, 110, 111, 135, 137, 139, 143, 161, 179, 389, 443, 445, 502, 1433, 3306, 3389]
+ELITE_PORTS = [6443, 8080, 2375, 2376, 9100, 9090, 9200, 5601, 6379, 11211, 8081, 3000, 5000, 8000, 11434]
+SYSTEM_PORTS = [6666, 8888]
 
-SACRIFICE_MAP = {
-    33893: ("127.0.0.1", 44893, "WINXP_SCADA"),
-    33894: ("127.0.0.1", 44894, "WINXP_OFFICE"),
-    4445: ("127.0.0.1", 44894, "LETHAL_SMB_VAULT") # Proxy hacia el SMB de WinXP Office
-}
+ALL_PORTS = GOLD_PORTS + ELITE_PORTS + SYSTEM_PORTS
 
 class TitanServer:
     def __init__(self):
         print(f"[*] INITIALIZING TITAN {VERSION}")
         os.makedirs("logs", exist_ok=True)
         os.makedirs("payloads", exist_ok=True)
-        titan_engine.precompute_bombs()
+        try:
+            self.elite = EliteHandler(self.log_event)
+        except Exception as e:
+            print(f"[!] Error EliteHandler: {e}")
+            self.elite = None
 
     def log_event(self, ip, port, action="Hit", status="ENGAGED", info=""):
         ts = time.strftime('%Y-%m-%d %H:%M:%S')
         report = f"[{action}] {ts} | IP: {ip} | Port: {port} | State: {status} | Info: {info}\n"
         with open(LOG_FILE, "a") as f: f.write(report)
 
-    def smb_drip_bomb(self, client_socket, attacker_ip):
-        # Enviar basura lenta (10 bytes por segundo) mientras el bot cree que lee el AD
-        self.log_event(attacker_ip, 445, "SMB_BOMB_ACTIVE", "DRIP_FEEDING")
-        junk = b"0" * 1024
-        try:
-            while True:
-                client_socket.sendall(junk)
-                time.sleep(1) # El goteo letal
-        except: pass
-        finally: client_socket.close()
-
     def handle_client(self, client_socket, addr, local_port):
         ip = addr[0]
-        
-        # --- FAKE RDP ACCEPTANCE (PUERTO 3389) ---
-        if local_port == 3389:
-            try:
-                # TPKT + X.224 Connection Confirm (Pakete de exito simulado)
-                success_rdp = b"\x03\x00\x00\x0b\x06\xd0\x00\x00\x12\x34\x00"
-                client_socket.send(success_rdp)
-                self.log_event(ip, 3389, "RDP_FAKE_SUCCESS", "REDIRECT_SUGGESTED")
-                time.sleep(1)
+        try:
+            if self.elite and local_port in ELITE_PORTS:
+                self.elite.dispatch(client_socket, addr, local_port)
+                return
+            
+            # Handler para el VOID (vía puerto 6666)
+            if local_port == 6666:
+                self.log_event(ip, local_port, "VOID_CAPTURE", "SUMERGIDO")
+                client_socket.sendall(b"WELCOME_TO_THE_VOID\n")
+                time.sleep(10)
+                return
+
+            # Handler Genérico Gold
+            self.log_event(ip, local_port)
+            client_socket.sendall(b"MEXCAPITAL_STALL_NODE\n")
+            time.sleep(2)
+        except: pass
+        finally:
+            try: client_socket.close()
             except: pass
-            finally: client_socket.close(); return
-
-        # --- LETHAL SMB PROXY ---
-        if local_port == 4445:
-            self.log_event(ip, 445, "SMB_SACRIFICE_INTERCEPTED", "XP_OFFICE")
-            threading.Thread(target=self.smb_drip_bomb, args=(client_socket, ip), daemon=True).start()
-            return
-
-        if local_port in SACRIFICE_MAP:
-            t = SACRIFICE_MAP[local_port]
-            self.log_event(ip, local_port, "SACRIFICE_ENGAGED", t[2])
-            client_socket.close(); return
-
-        # Resto de trampas...
-        ramiel_tarpit.handle_drip(client_socket, ip, local_port)
 
     def start_listener(self, port):
+        if port == 8888: return 
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             server.bind((HOST, port))
-            server.listen(100)
+            server.listen(150)
+            print(f"[OK] {port} Active")
             while True:
                 c, a = server.accept()
                 threading.Thread(target=self.handle_client, args=(c, a, port), daemon=True).start()
-        except OSError: pass
+        except Exception as e:
+            print(f"[!] FAIL {port}: {e}")
 
     def start(self):
-        threading.Thread(target=sync_shadow_log, daemon=True).start() # Funcion sync omitida aqui por brevedad
-        threading.Thread(target=leliel_void.start_void, args=(self.log_event,), daemon=True).start()
+        # 1. Dashboard primero
         threading.Thread(target=dashboard_server.start_dashboard, args=(LOG_FILE,), daemon=True).start()
-        for port in PORTS:
+        time.sleep(2)
+        
+        # 2. Apertura secuencial de puertos
+        print(f"[*] Starting sequential boot for {len(ALL_PORTS)} ports...")
+        for port in ALL_PORTS:
+            if port == 8888: continue
             threading.Thread(target=self.start_listener, args=(port,), daemon=True).start()
-            time.sleep(0.01)
-        print(f"[OK] TITAN v19.0 ONLINE. Lethal SMB and Fake RDP Active.")
-        while True: time.sleep(1)
+            time.sleep(1.5) # Delay de estabilidad
+            
+        print(f"[STATUS] {VERSION} ONLINE. Full Patrol Active.")
+        while True: time.sleep(10)
 
-def sync_shadow_log():
-    while True:
-        try:
-            if os.path.exists("logs/hell_activity.log"): 
-                shutil.copy2("logs/hell_activity.log", "logs/dashboard_live.log")
-        except: pass
-        time.sleep(5)
-
-if __name__ == "__main__": TitanServer().start()
+if __name__ == "__main__":
+    TitanServer().start()

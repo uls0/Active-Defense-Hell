@@ -1,0 +1,17 @@
+[Unit]
+Description=HELL Active Defense Core
+After=network.target mariadb.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Active-Defense-Hell
+ExecStart=/usr/bin/python3 /root/Active-Defense-Hell/hell_core_native.py
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=hell-core
+
+[Install]
+WantedBy=multi-user.target

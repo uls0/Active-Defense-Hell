@@ -1,0 +1,17 @@
+[Unit]
+Description=HELL Threat Intelligence Auto-Reporter
+After=hell.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Active-Defense-Hell
+ExecStart=/usr/bin/python3 /root/Active-Defense-Hell/scripts/threat_intel_auto.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hell-intel
+
+[Install]
+WantedBy=multi-user.target

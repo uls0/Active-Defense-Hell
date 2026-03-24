@@ -1,0 +1,45 @@
+{
+  "project": "HELL-SINGULARITY",
+  "protocol_version": "v1.2-STABLE",
+  "deployment_workflow": {
+    "step_1_templates": {
+      "action": "Crear archivo de decepción (HTML/Txt/Hex) en /root/Active-Defense-Hell/templates/",
+      "purpose": "Proporcionar un señuelo visual o de protocolo al atacante.",
+      "path": "/app/templates/"
+    },
+    "step_2_core_logic": {
+      "action": "Editar /root/Active-Defense-Hell/hell_core.py",
+      "requirements": [
+        "Añadir el puerto a la lista global PORTS",
+        "Implementar el handler en handle_client()",
+        "Usar send_template_response() para servicios HTTP o sendall() para banners crudos"
+      ]
+    },
+    "step_3_dashboard_mapping": {
+      "action": "Actualizar /root/Active-Defense-Hell/scripts/check_hell_intel.py",
+      "purpose": "Asegurar que el Dashboard de terminal reconozca el puerto y muestre su arsenal definido.",
+      "variable": "ARSENAL_MAP"
+    },
+    "step_4_forced_rebuild": {
+      "action": "Ejecutar despliegue limpio en el VPS",
+      "commands": [
+        "docker-compose down",
+        "docker rmi active-defense-hell-hell_core (opcional para purga)",
+        "docker-compose up -d --build --force-recreate"
+      ],
+      "reason": "Garantiza que el binario de Python reconozca los nuevos sockets en Modo Host."
+    },
+    "step_5_verification": {
+      "commands": [
+        "netstat -tulpn | grep <PUERTO>",
+        "python3 scripts/check_hell_intel.py"
+      ],
+      "success_indicator": "Estado ACTIVE [ON] en el Dashboard"
+    }
+  },
+  "critical_notes": [
+    "Asegurar que el puerto no colisione con servicios del sistema (SSH 2200, etc.)",
+    "Verificar que la zona horaria sea CST (Mexico City) para forense preciso",
+    "Rotar logs si el Void se estanca tras un cambio de arquitectura"
+  ]
+}

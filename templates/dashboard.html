@@ -2,173 +2,315 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TITAN v16.6 | TACTICAL COMMAND CENTER</title>
+    <title>HELL_SINGULARITY | COMMAND_CENTER v2.0</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        
         :root {
             --neon-cyan: #00f3ff;
             --neon-red: #ff003c;
             --neon-green: #39ff14;
-            --dark-bg: #050608;
-            --panel-bg: rgba(10, 12, 16, 0.95);
+            --neon-yellow: #f0ff00;
+            --dark-bg: #010101;
+            --panel-bg: rgba(5, 7, 10, 0.98);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; cursor: crosshair; }
+        
         body { 
             background-color: var(--dark-bg); 
-            color: #e0e0e0; 
-            font-family: 'Courier New', Courier, monospace;
+            color: #d1d1d1; 
+            font-family: 'JetBrains Mono', monospace;
             overflow: hidden;
             height: 100vh;
             display: flex; flex-direction: column;
-            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050608 100%);
+            background-image: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
         }
-        .header { display: flex; justify-content: space-between; align-items: end; padding: 10px 15px; border-bottom: 1px solid rgba(0, 243, 255, 0.3); }
-        .grid { display: grid; grid-template-columns: 300px 1fr 300px; gap: 10px; flex-grow: 1; padding: 10px; overflow: hidden; }
-        .card { background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.1); padding: 12px; border-radius: 4px; position: relative; backdrop-filter: blur(5px); }
-        .cyber-border { border-left: 4px solid var(--neon-cyan); box-shadow: -5px 0 15px rgba(0, 243, 255, 0.2); }
-        
-        /* Contraste mejorado para etiquetas */
-        .stat-label { font-size: 10px; color: var(--neon-cyan); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9; }
-        .stat-value { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
-        
-        .feed-container { overflow-y: auto; height: 100%; font-size: 10px; }
-        .event-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 5px 0; display: grid; grid-template-columns: 60px 110px 70px 1fr 90px; gap: 8px; align-items: center; }
-        .event-ip { color: var(--neon-red); font-weight: bold; }
-        .event-port { color: var(--neon-green); font-weight: bold; background: #111; padding: 1px 4px; border-radius: 2px; font-size: 9px; }
-        
-        .data-stream { font-size: 9px; color: var(--neon-green); height: 60px; background: #000; padding: 8px; overflow: hidden; border: 1px solid #111; margin-top: 8px; opacity: 0.6; }
-        .botnet-badge { background: rgba(255,0,0,0.15); border: 1px solid var(--neon-red); padding: 6px; margin-top: 6px; border-radius: 2px; }
-        .void-box { border: 1px solid #222; background: #000; padding: 5px; margin-top: 10px; font-size: 8px; color: #444; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-        .void-port { background: #111; border: 1px solid #222; text-align: center; color: var(--neon-green); }
+
+        /* Scanline Animation */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10;
+            background-size: 100% 4px, 4px 100%;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            from { top: -100px; }
+            to { top: 100%; }
+        }
+
+        .scanline {
+            width: 100%; height: 100px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0, 243, 255, 0.05) 50%, rgba(0,0,0,0) 100%);
+            position: absolute; top: 0; left: 0;
+            animation: scan 8s linear infinite;
+            z-index: 5; pointer-events: none;
+        }
+
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 25px; border-bottom: 2px solid var(--neon-cyan);
+            background: rgba(0,0,0,0.8); box-shadow: 0 0 20px rgba(0,243,255,0.2);
+            position: relative; z-index: 20;
+        }
+
+        .grid { display: grid; grid-template-columns: 350px 1fr 350px; gap: 15px; flex-grow: 1; padding: 15px; overflow: hidden; }
+
+        .card { 
+            background: var(--panel-bg); 
+            border: 1px solid rgba(0, 243, 255, 0.15); 
+            padding: 15px; border-radius: 2px; position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .cyber-border { border-left: 3px solid var(--neon-cyan); }
+        .alert-border { border-left: 3px solid var(--neon-red); animation: pulse-red 2s infinite; }
+
+        @keyframes pulse-red {
+            0% { border-color: var(--neon-red); box-shadow: 0 0 5px var(--neon-red); }
+            50% { border-color: #800000; box-shadow: 0 0 15px var(--neon-red); }
+            100% { border-color: var(--neon-red); box-shadow: 0 0 5px var(--neon-red); }
+        }
+
+        .stat-label { font-size: 11px; color: var(--neon-cyan); font-weight: bold; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.8; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+
+        .feed-container { overflow-y: auto; height: 100%; scrollbar-width: none; }
+        .event-item { 
+            font-size: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: grid; grid-template-columns: 80px 120px 80px 1fr 100px; gap: 10px;
+        }
+
+        .trapped-botnet { 
+            background: rgba(255,0,60,0.05); border: 1px solid rgba(255,0,60,0.2); 
+            padding: 10px; margin-bottom: 10px; position: relative; overflow: hidden;
+        }
+        .trapped-botnet::after {
+            content: "TRAPPED"; position: absolute; top: 0; right: 0; 
+            background: var(--neon-red); color: #fff; font-size: 7px; padding: 2px 5px;
+        }
+
+        .progress-bar { 
+            height: 4px; background: #111; margin-top: 8px; border-radius: 2px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .progress-fill { height: 100%; background: var(--neon-green); width: 0%; transition: width 1s; box-shadow: 0 0 10px var(--neon-green); }
+
+        .glitch-text { animation: glitch 1s infinite alternate; }
+        @keyframes glitch {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(2deg); color: var(--neon-cyan); }
+            40% { transform: skew(-2deg); color: var(--neon-red); }
+            100% { transform: skew(0deg); }
+        }
+
+        .void-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px; }
+        .void-cell { background: #000; border: 1px solid #111; color: var(--neon-green); font-size: 9px; text-align: center; padding: 4px 0; }
+        .void-cell.active { background: rgba(57, 255, 20, 0.1); border-color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+
     </style>
 </head>
 <body>
+    <div class="scanline"></div>
+    
     <div class="header">
         <div>
-            <h1 style="color:#fff; font-style:italic; font-weight:900;">TITAN_OS <span style="color:var(--neon-red)">STORM-SENTINEL v16.6</span></h1>
-            <div style="font-size: 9px; color: var(--neon-cyan); opacity: 0.7;">[ PROTOCOLO: ACTIVE_ENGAGEMENT ] [ SECURITY: NON-REVERSIBLE ]</div>
+            <h1 class="glitch-text" style="color:#fff; font-weight:900; letter-spacing: -1px;">PROJECT_HELL <span style="color:var(--neon-red)">v2.1-LETHAL</span></h1>
+            <div style="font-size: 9px; color: var(--neon-cyan); letter-spacing: 1px;">STATUS: ACTIVE_DEFENSE_ENGAGED // SINGULARITY_MODE</div>
         </div>
         <div style="text-align: right;">
-            <div id="clock" style="font-size: 20px; font-weight: bold; color: var(--neon-cyan);">00:00:00</div>
-            <div style="font-size: 8px; color: #555; letter-spacing: 2px;">GRID_UP_TIME</div>
+            <div id="clock" style="font-size: 24px; font-weight: bold; color: var(--neon-cyan); text-shadow: 0 0 15px var(--neon-cyan);">00:00:00</div>
+            <div style="font-size: 9px; color: #666; letter-spacing: 3px;">REAL_TIME_UPLINK</div>
         </div>
     </div>
 
     <div class="grid">
-        <!-- METRICS -->
-        <div class="flex flex-col gap-3">
+        <!-- LEFT: INTEL & METRICS -->
+        <div style="display: flex; flex-direction: column; gap: 15px;">
             <div class="card cyber-border">
-                <div class="stat-label">BOTS_CAPTURADOS</div>
+                <div class="stat-label">AGGRESSORS_NEUTRALIZED</div>
                 <div id="hits" class="stat-value" style="color:var(--neon-red)">0</div>
+                <div id="hits_delta" style="font-size:9px; color:var(--neon-green); margin-top:4px;">+0 HITS/MIN</div>
             </div>
-            <div class="card cyber-border" style="border-color: var(--neon-green);">
-                <div class="stat-label">SESIONES_ACTIVAS</div>
-                <div id="active" class="stat-value" style="color:var(--neon-green)">0</div>
+            <div class="card alert-border">
+                <div class="stat-label">BOTNET_SWARM_ACTIVITY</div>
+                <div id="botnet_swarm" style="margin-top:10px;">
+                    <!-- Botnets list here -->
+                </div>
             </div>
-            <div class="card cyber-border" style="border-color: #fff;">
-                <div class="stat-label">PAYLOAD_ENVIADOS</div>
-                <div id="data" class="stat-value" style="color:#fff">0 Mb</div>
-            </div>
-            <div class="card" style="flex-grow: 1;">
-                <div class="stat-label" style="color:var(--neon-red)">DETECCION_BOTNET</div>
-                <div id="botnet_box"></div>
-                
-                <!-- MINI RECUADRO VOID -->
-                <div class="stat-label" style="margin-top:15px; font-size:8px; color:#444;">VOID_REDIRECTION_STATUS</div>
-                <div id="void_status" class="void-box"></div>
+            <div class="card cyber-border" style="border-color: var(--neon-green); flex-grow: 1;">
+                <div class="stat-label">LUCIFER_VOID_MAP (20101-65534)</div>
+                <div id="void_grid" class="void-grid">
+                    <!-- Void cells here -->
+                </div>
             </div>
         </div>
 
-        <!-- CENTER MONITOR -->
-        <div class="card" style="display: flex; flex-direction: column; border-top: 2px solid var(--neon-cyan);">
-            <div style="font-size: 10px; font-weight: bold; color: var(--neon-cyan); margin-bottom: 8px;">[ LIVE_INTERCEPTION_MONITOR ] (51_PORTS_ACTIVE)</div>
-            <div class="event-item" style="border-bottom: 1px solid #222; color: #444; font-weight: bold; font-size: 8px;">
-                <span>TIME</span><span>IP_SOURCE</span><span>PORT</span><span>TARGET_VULN</span><span>TACTIC_USED</span>
+        <!-- CENTER: LIVE TACTICAL FEED -->
+        <div class="card" style="display: flex; flex-direction: column; border: 1px solid rgba(0,243,255,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(0,243,255,0.1); padding-bottom:5px;">
+                <div class="stat-label" style="margin-bottom:0; color:#fff;">[ LIVE_TACTICAL_FEED ]</div>
+                <div style="font-size: 9px; color:var(--neon-green); animation: pulse-red 1s infinite;">● RECORDING_ENCRYPTED</div>
             </div>
-            <div class="feed-container" id="feed"></div>
-            <div class="data-stream" id="data_stream"></div>
+            
+            <div class="feed-container" id="feed">
+                <!-- Live events here -->
+            </div>
+            
+            <div style="margin-top:10px; padding:10px; background:rgba(0,243,255,0.02); border:1px solid rgba(0,243,255,0.05); font-size:9px; color:var(--neon-cyan);">
+                <span style="opacity:0.5;">CONSOLE_CMD:</span> <span id="typing_text">HELL_SYSTEM_CORE_READY...</span>
+            </div>
         </div>
 
-        <!-- RIGHT SIDEBAR -->
-        <div class="flex flex-col gap-3">
-            <div class="card cyber-border" style="border-left: 0; border-right: 4px solid #ffaa00;">
-                <div class="stat-label">VULNERABILIDADES_TOP</div>
-                <div id="signatures" style="font-size: 10px; margin-top: 8px;"></div>
+        <!-- RIGHT: ANALYSIS & GEOPOLITICS -->
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="card cyber-border" style="border-left:0; border-right:3px solid var(--neon-cyan);">
+                <div class="stat-label">TOTAL_DATA_DRAINED</div>
+                <div id="data" class="stat-value" style="color:#fff">0.00 Mb</div>
+                <div style="height:10px; width:100%; background:#111; margin-top:8px; border-radius:5px;">
+                    <div id="data_bar" style="height:100%; width:0%; background:var(--neon-cyan); border-radius:5px; transition: width 0.5s;"></div>
+                </div>
             </div>
-            <div class="card cyber-border" style="border-left: 0; border-right: 4px solid var(--neon-cyan);">
-                <div class="stat-label">MAPA_DE_CALOR_GEO</div>
-                <div id="types" style="font-size: 10px; margin-top: 8px;"></div>
+            
+            <div class="card cyber-border" style="border-left:0; border-right:3px solid var(--neon-green);">
+                <div class="stat-label">GEOPOLITICAL_ORIGIN</div>
+                <div id="countries" style="font-size:10px; margin-top:10px;"></div>
             </div>
-            <div class="card" style="text-align: center; border: 1px solid rgba(255,0,0,0.2);">
-                <div class="stat-label">TARGET_CRITICO</div>
-                <div id="top_attacker" style="font-size: 12px; font-weight: bold; color: var(--neon-red); margin-top: 5px;">SCANNING</div>
+
+            <div class="card cyber-border" style="border-left:0; border-right:3px solid var(--neon-red); flex-grow: 1;">
+                <div class="stat-label">BOTNETS_TRAPPED_IN_HELL</div>
+                <div id="trapped_box" style="margin-top:10px;">
+                    <!-- Trapped botnets detailed here -->
+                </div>
             </div>
         </div>
     </div>
 
-    <div style="padding: 8px 15px; font-size: 8px; color: #333; display: flex; justify-content: space-between;">
-        <div>VT_INTEL: <span id="vt_count" style="color:var(--neon-cyan)">0</span> | ABUSE_UPLINK: <span id="abuse_count" style="color:var(--neon-green)">0</span></div>
-        <div style="font-weight: bold; letter-spacing: 1px;">ACTIVE_DEFENSE_SENTINEL // OMEGA_PROTOCOL</div>
+    <div style="padding: 10px 25px; border-top: 1px solid rgba(255,255,255,0.05); background: #000; font-size: 9px; color: #444; display: flex; justify-content: space-between; align-items:center;">
+        <div style="display:flex; gap:20px;">
+            <div>SENSORS: <span id="sensor_count" style="color:var(--neon-green)">ONLINE</span></div>
+            <div>UPLINK: <span id="uplink_latency" style="color:var(--neon-cyan)">12ms</span></div>
+            <div>ABUSE_UPLOADS: <span id="abuse_count" style="color:var(--neon-red)">0</span></div>
+        </div>
+        <div style="letter-spacing: 2px; font-weight: bold;">[ SYSTEM ARCHITECTURE: OMEGA-POINT ]</div>
     </div>
 
     <script>
-        function updateClock() { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }
+        let lastHits = 0;
+        let typingIndex = 0;
+        let currentLoot = [];
+        let lootIndex = 0;
+        const defaultText = "HELL_OS_KERNAL_INITIALIZED... ANALYZING_ATTACK_VECTORS... INJECTING_FIFIELD_BOMBS... STATUS_OPTIMAL...";
+
+        async function fetchLoot() {
+            try {
+                const r = await fetch('/api/loot');
+                const d = await r.json();
+                if (d.loot && d.loot.length > 0) currentLoot = d.loot;
+            } catch (e) {}
+        }
+        setInterval(fetchLoot, 10000); // Actualizar loot cada 10s
+
+        function typeConsole() {
+            const el = document.getElementById('typing_text');
+            let displayMsg = defaultText;
+            
+            if (currentLoot.length > 0) {
+                const lootItem = currentLoot[lootIndex % currentLoot.length];
+                displayMsg = `[LOOT_CAPTURED] ${lootItem} | ${defaultText}`;
+                if (typingIndex === 0) lootIndex++; 
+            }
+
+            el.innerText = displayMsg.substring(0, typingIndex) + "_";
+            typingIndex++; 
+            if (typingIndex > displayMsg.length) {
+                typingIndex = 0;
+            }
+        }
+        setInterval(typeConsole, 80);
+
+        function updateClock() { 
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); 
+        }
         setInterval(updateClock, 1000);
 
         async function update() {
             try {
                 const r = await fetch('/api/stats');
                 const d = await r.json();
-                document.getElementById('hits').innerText = d.hits.toLocaleString();
-                document.getElementById('active').innerText = d.active_ips.length;
-                document.getElementById('data').innerText = (d.total_data * 8).toFixed(2) + " Mb";
-                document.getElementById('vt_count').innerText = d.vt_reports;
-                document.getElementById('abuse_count').innerText = d.abuse_reports;
-                document.getElementById('top_attacker').innerText = d.top_attacker;
+                
+                // Metrics
+                const hits = d.hits;
+                document.getElementById('hits').innerText = hits.toLocaleString();
+                const delta = hits - lastHits;
+                if (lastHits > 0) document.getElementById('hits_delta').innerText = `+${delta * 24} HITS/HR`;
+                lastHits = hits;
 
+                document.getElementById('data').innerText = (d.total_data * 8).toFixed(2) + " Mb";
+                document.getElementById('data_bar').style.width = Math.min(100, (d.total_data * 0.1)) + "%";
+                document.getElementById('abuse_count').innerText = d.abuse_reports;
+
+                // Tactical Feed
                 document.getElementById('feed').innerHTML = d.recent_events.map(e => `
                     <div class="event-item">
-                        <span style="color:#222;">${e.time.split(' ')[1]}</span>
-                        <span class="event-ip">${e.ip}</span>
-                        <span class="event-port">P_${e.port}</span>
-                        <span style="color:#555; overflow:hidden;">${e.network}</span>
-                        <span style="color:var(--neon-green); font-size:8px;">${e.tactic}</span>
+                        <span style="color:#333;">${e.time.split(' ')[1]}</span>
+                        <span style="color:var(--neon-red); font-weight:bold;">${e.ip}</span>
+                        <span style="color:var(--neon-green); font-weight:bold;">P:${e.port}</span>
+                        <span style="color:#555; overflow:hidden; white-space:nowrap;">${e.network}</span>
+                        <span style="color:var(--neon-cyan); text-align:right; font-size:8px;">${e.tactic}</span>
                     </div>
                 `).reverse().join('');
 
-                const s = document.getElementById('data_stream');
-                const l = document.createElement('div');
-                l.innerText = `[PCAP] 0x${Math.random().toString(16).slice(2,14).toUpperCase()}... [OK]`;
-                s.prepend(l); if(s.children.length > 5) s.lastElementChild.remove();
-
-                if (d.botnets) {
-                    document.getElementById('botnet_box').innerHTML = d.botnets.map(b => `
-                        <div class="botnet-badge">
-                            <div style="font-size: 7px; color: var(--neon-red); font-weight: bold;">[!] BOTNET_MATCH</div>
-                            <div style="font-size: 11px; color: #fff; font-weight: bold;">${b.name}: ${b.ip}</div>
-                        </div>
-                    `).join('');
-                }
-
-                if (d.void_ports) {
-                    document.getElementById('void_status').innerHTML = d.void_ports.map(p => `<div class="void-port">${p}</div>`).join('');
-                }
-
-                document.getElementById('signatures').innerHTML = Object.entries(d.signatures).map(([s, c]) => `
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #111; padding:3px 0;">
-                        <span style="color:#444">PORT_${s}</span>
-                        <span style="color:var(--neon-cyan); font-weight:bold;">${c}</span>
+                // Botnet Swarm
+                document.getElementById('botnet_swarm').innerHTML = d.botnets.slice(0, 3).map(b => `
+                    <div style="border-left:2px solid var(--neon-red); padding-left:10px; margin-bottom:12px;">
+                        <div style="font-size:8px; color:var(--neon-red); font-weight:bold;">DETECTION: ${b.name}</div>
+                        <div style="font-size:12px; font-weight:bold; color:#fff;">${b.ip}</div>
+                        <div style="font-size:7px; color:#444; margin-top:3px;">TACTIC: Drip-Feed & Void Trap</div>
                     </div>
                 `).join('');
 
-                document.getElementById('types').innerHTML = Object.entries(d.countries).map(([s, c]) => `
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #111; padding:3px 0;">
-                        <span style="color:#444">${s}</span>
+                // Trapped Botnets Section (New)
+                document.getElementById('trapped_box').innerHTML = d.botnets.map(b => `
+                    <div class="trapped-botnet">
+                        <div style="font-size:9px; font-weight:bold; color:#fff;">${b.ip}</div>
+                        <div style="font-size:7px; color:#666; display:flex; justify-content:space-between; margin-top:4px;">
+                            <span>BOT: ${b.name}</span>
+                            <span>DRIPPING_BASURA...</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${Math.random() * 80 + 20}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Void Grid
+                const v_ports = d.void_ports || [];
+                document.getElementById('void_grid').innerHTML = Array.from({length: 20}).map((_, i) => {
+                    const port = v_ports[i] || (20101 + i);
+                    const active = v_ports.includes(port) ? 'active' : '';
+                    return `<div class="void-cell ${active}">${port}</div>`;
+                }).join('');
+
+                // Countries
+                document.getElementById('countries').innerHTML = Object.entries(d.countries).map(([s, c]) => `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #111; padding:2px 0;">
+                        <span style="color:#555">${s}</span>
                         <span style="color:var(--neon-green); font-weight:bold;">${c}</span>
                     </div>
                 `).join('');
 
-            } catch (e) { }
+            } catch (e) { console.error(e); }
         }
+        
         setInterval(update, 2500); update(); updateClock();
     </script>
 </body>

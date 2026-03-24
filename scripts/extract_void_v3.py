@@ -23,7 +23,6 @@ def get_top_void_ports():
         ssh.connect(HOST, port=PORT, username=USER, password=PASS, timeout=30)
         
         # Comando para extraer puertos del log principal
-        # Usamos awk y grep de forma que no requiera escapes complejos desde Python
         cmd_main = "grep 'Target Port:' " + LOG_PATH + " | grep '(VOID RANGE)'"
         print("[*] Analizando log principal...")
         
@@ -44,7 +43,14 @@ def get_top_void_ports():
             found_ports = re.findall(r'PORT:(\d+)', mini_output)
             
         # Filtrar por rango del Void (20101-65534)
-        void_ports = [int(p) for p in found_ports if 20101 <= int(p) <= 65534]
+        void_ports = []
+        for p in found_ports:
+            try:
+                p_int = int(p)
+                if 20101 <= p_int <= 65534:
+                    void_ports.append(p_int)
+            except ValueError:
+                continue
         
         if not void_ports:
             print("[!] No se detectaron puertos en el rango del Void (20101-65534).")
@@ -56,17 +62,14 @@ def get_top_void_ports():
         # Guardar resultados
         output_file = 'void_top_500_analysis.txt'
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write("--- ANALISIS DE PUERTOS TOP VOID (SESION ANTERIOR) ---
-")
+            f.write("--- ANALISIS DE PUERTOS TOP VOID ---\n")
             for port, count in stats:
-                f.write(f"Puerto: {port} | Hits: {count}
-")
+                f.write(f"Puerto: {port} | Hits: {count}\n")
         
         print(f"[OK] Analisis completado. {len(stats)} puertos registrados en {output_file}")
         
         # Mostrar Top 10 en consola
-        print("
---- RESUMEN TOP 10 ---")
+        print("\n--- RESUMEN TOP 10 ---")
         for port, count in stats[:10]:
             print(f"-> {port}: {count} hits")
 

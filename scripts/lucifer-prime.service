@@ -1,0 +1,14 @@
+[Unit]
+Description=LUCIFER PRIME - Military Grade Tarpit
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Active-Defense-Hell
+ExecStart=/usr/bin/python3 /root/Active-Defense-Hell/scripts/lucifer_prime.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

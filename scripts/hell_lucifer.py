@@ -6,21 +6,34 @@ import struct
 import random
 import binascii
 
-# HELL-LUCIFER v1.2
-# Dedicated Mini-Log & Payload Capture (Range: 20101-65535)
+# =============================================================================
+# HELL-LUCIFER v1.5 - THE VOID PORT CAPTURE
+# =============================================================================
+# Captura de puertos originales mediante SO_ORIGINAL_DST (Iptables REDIRECT)
+# =============================================================================
 
 LUCIFER_PORT = 6666
 MAIN_LOG = "logs/hell_activity.log"
 MINI_LOG = "logs/lucifer_mini.log"
-SO_ORIGINAL_DST = 80 
+
+# En Linux x86/ARM, SO_ORIGINAL_DST suele ser 80
+SO_ORIGINAL_DST = 80
 
 async def get_original_dst(writer):
+    """
+    Recupera el puerto de destino original antes de la redireccion de Iptables.
+    """
     try:
         sock = writer.get_extra_info('socket')
+        # Intentamos obtener la estructura sockaddr_in (16 bytes)
         odst = sock.getsockopt(socket.SOL_IP, SO_ORIGINAL_DST, 16)
-        _, port, _ = struct.unpack("!HH4s8s", odst)
+        
+        # Desempaquetado: family (H), port (H), addr (4s), padding (8s)
+        # Usamos big-endian (!) para los datos de red
+        _, port, _, _ = struct.unpack("!HH4s8s", odst)
         return port
-    except:
+    except Exception as e:
+        # Fallback silencioso si no es una redireccion de Iptables
         return "UNKNOWN"
 
 async def handle_lucifer_engagement(reader, writer):
@@ -29,38 +42,34 @@ async def handle_lucifer_engagement(reader, writer):
     original_port = await get_original_dst(writer)
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
     
-    # 1. CAPTURA DE PAYLOAD (Primeros 1024 bytes)
+    # Captura rapida de payload para el mini-log
     payload_hex = "NO_DATA"
     try:
-        # Esperamos un máximo de 2 segundos para ver si el bot envía algo
-        data = await asyncio.wait_for(reader.read(1024), timeout=2.0)
+        data = await asyncio.wait_for(reader.read(512), timeout=1.5)
         if data:
             payload_hex = binascii.hexlify(data).decode('utf-8')
-    except asyncio.TimeoutError:
-        pass
     except:
-        payload_hex = "ERROR_READING"
+        pass
 
-    # 2. REGISTRO EN MINI-LOG (Forense Rápido)
-    mini_report = f"[{timestamp}] IP:{ip} | PORT:{original_port} | PAYLOAD:{payload_hex}\n"
-    
-    # 3. REGISTRO EN LOG PRINCIPAL (Visibilidad)
-    main_report = f"\n[🔱 HELL-LUCIFER]: {timestamp}\n----------------------------------------\nIP: {ip}\nTarget Port: {original_port} (VOID RANGE)\nPayload Captured: {payload_hex[:64]}...\nAction: TRAPPED IN THE ABYSS\n----------------------------------------\n"
+    # Registro en log principal con el puerto REAL
+    status_msg = f"[🔱 HELL-LUCIFER] | IP: {ip} | Target Port: {original_port} (VOID RANGE) | Action: TRAPPED\n"
+    mini_msg = f"[{timestamp}] IP:{ip} | PORT:{original_port} | PAYLOAD:{payload_hex}\n"
     
     try:
-        with open(MINI_LOG, "a", encoding='utf-8') as f:
-            f.write(mini_report)
         with open(MAIN_LOG, "a", encoding='utf-8') as f:
-            f.write(main_report)
+            f.write(status_msg)
+        with open(MINI_LOG, "a", encoding='utf-8') as f:
+            f.write(mini_msg)
     except:
         pass
 
+    # Tarpit L7: Enviar basura lenta para retener al atacante
     try:
-        # Tarpit Infinito
         while True:
-            writer.write(os.urandom(512))
+            # Enviamos un fragmento de basura cada 20-40 segundos
+            writer.write(os.urandom(256))
             await writer.drain()
-            await asyncio.sleep(random.uniform(15, 45))
+            await asyncio.sleep(random.uniform(20, 40))
     except:
         pass
     finally:
@@ -71,13 +80,13 @@ async def handle_lucifer_engagement(reader, writer):
             pass
 
 async def main():
-    print(f"[*] HELL-LUCIFER v1.2: Initializing Payload Capture on port {LUCIFER_PORT}...")
+    print(f"[*] HELL-LUCIFER v1.5: Monitoring Void on port {LUCIFER_PORT}...")
     try:
         server = await asyncio.start_server(handle_lucifer_engagement, '0.0.0.0', LUCIFER_PORT)
         async with server:
             await server.serve_forever()
     except Exception as e:
-        print(f"[!] Critical Error in Lucifer: {e}")
+        print(f"[!] Critical error in Lucifer: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
